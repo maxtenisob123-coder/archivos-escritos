@@ -1,239 +1,207 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivo de Mundos | Control Total</title>
+    <title>Campus Virtual | Turismo en la Nube</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
+        /* MANTENEMOS TU PALETA DE COLORES "TRAVEL AGENCY" */
         :root {
-            --fondo: #0f0f0f;
-            --tarjeta: #1a1a1a;
-            --primario: #58181F; 
-            --acento: #912b35;
-            --texto: #d1d1d1;
+            --bg-main: #fdfaf1; --bg-panel: #ffffff; --border: #f9b17a;  
+            --input-bg: #e8ebf0; --text-main: #2d3250; --text-sub: #707793;     
+            --accent: #f9b17a; --text-btn: #2d3250; --shadow: rgba(249, 177, 122, 0.15); 
         }
 
-        .tema-slytherin { --primario: #1a472a; --acento: #2a623d; --fondo: #070d08; }
-        .tema-darksouls { --primario: #3c3c3c; --acento: #8a7038; --fondo: #0a0a0a; }
-        .tema-scifi { --primario: #004d4d; --acento: #008080; --fondo: #020a0a; }
-
-        body {
-            background-color: var(--fondo);
-            color: var(--texto);
-            font-family: 'Garamond', serif;
-            margin: 0;
-            transition: all 0.5s ease;
+        body.dark-mode {
+            --bg-main: #1a1d2e; --bg-panel: #2d3250; --border: #424769;  
+            --input-bg: #424769; --text-main: #ffffff; --text-sub: #c0c5d1;     
+            --accent: #f9b17a; --text-btn: #2d3250; --shadow: rgba(0, 0, 0, 0.4); 
         }
 
+        body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Raleway', sans-serif; margin: 0; transition: all 0.4s ease; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        .header-controls {
-            background: rgba(0,0,0,0.8);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--primario);
-        }
+        /* PANTALLA DE ACCESO */
+        #login-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+        .login-card { background-color: var(--bg-panel); border: 2px solid var(--border); border-radius: 15px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px var(--shadow); width: 100%; max-width: 400px; }
+        .login-input { width: 100%; padding: 15px; margin-bottom: 15px; background-color: var(--input-bg); border: none; border-radius: 8px; color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 15px; background-color: var(--accent); color: var(--text-btn); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
 
-        .card-mundo {
-            background: var(--tarjeta);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #333;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .card-mundo img { width: 100%; height: 150px; object-fit: cover; background: #222; }
-        .card-mundo:hover { border-color: var(--acento); transform: translateY(-5px); }
-        .card-info { padding: 15px; }
+        /* CAMPUS VIRTUAL */
+        #app-section { display: flex; height: 100vh; width: 100%; }
+        #sidebar { width: 250px; background-color: var(--bg-panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; padding-top: 20px; overflow-y: auto; }
+        .btn-semestre { background: transparent; color: var(--text-sub); border: none; padding: 15px 20px; text-align: left; font-size: 1.1rem; cursor: pointer; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .btn-semestre:hover, .btn-semestre.activo { background-color: var(--accent); color: var(--text-btn); }
+        #contenido-principal { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: var(--bg-main); }
 
-        input, textarea, select {
-            width: 100%; padding: 10px; margin: 8px 0;
-            background: #252525; border: 1px solid #444; color: white; border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 10px 20px; background: var(--primario); color: white;
-            border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
-        }
-        button:hover { background: var(--acento); }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
-        
-        /* Estilo para la lista de usuarios */
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px;
-            border-bottom: 1px solid #333;
-            margin-bottom: 5px;
-        }
+        /* ELEMENTOS DEL AULA */
+        .panel-modulo { background: var(--bg-panel); padding: 25px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+        textarea { width: 100%; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 8px; padding: 15px; font-size: 1rem; resize: vertical; min-height: 100px; box-sizing: border-box; font-family: 'Raleway', sans-serif;}
+        .materia-card { background: var(--bg-panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 10px; padding: 20px; text-align: center; }
+        .grid-materias { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
     </style>
 </head>
-<body id="body-main">
+<body>
 
-    <div id="login-section" style="display:flex; justify-content:center; align-items:center; height:100vh;">
-        <div style="background:var(--tarjeta); padding:40px; border:1px solid var(--primario); text-align:center; border-radius:10px;">
-            <h1 style="color:var(--acento)">ARCHIVO DE MUNDOS</h1>
-            <input type="text" id="user-input" placeholder="Usuario">
-            <input type="password" id="pass-input" placeholder="Contraseña">
-            <button onclick="intentarLogin()">DESCIFRAR</button>
+    <div id="login-section">
+        <div class="login-card">
+            <h1>Campus Virtual</h1>
+            <p>Sincronizado en la Nube</p>
+            <input type="text" id="user-input" class="login-input" placeholder="admin">
+            <input type="password" id="pass-input" class="login-input" placeholder="1234">
+            <button class="btn-submit" onclick="intentarLogin()">Acceder y Sincronizar</button>
+            <p id="loading-msg" class="hidden" style="color:var(--accent); margin-top:10px;">Cargando datos desde la nube...</p>
         </div>
     </div>
 
     <div id="app-section" class="hidden">
-        <div class="header-controls">
-            <span>Archivero: <b id="current-user-display" style="color:var(--acento)"></b></span>
-            <div>
-                <select onchange="cambiarTema(this.value)" style="width: auto;">
-                    <option value="">Tema: Clásico Vino</option>
-                    <option value="tema-slytherin">Tema: Slytherin</option>
-                    <option value="tema-darksouls">Tema: Cenizas</option>
-                    <option value="tema-scifi">Tema: Selene II</option>
-                </select>
-                <button id="btn-gestion-usuarios" onclick="abrirGestionUsuarios()" class="hidden" style="background:var(--acento);">Gestionar Usuarios</button>
-                <button onclick="location.reload()" style="background:#444;">Cerrar Sesión</button>
+        <div id="sidebar">
+            <h2 style="text-align:center;">Turismo</h2>
+            <button class="btn-semestre activo" onclick="abrirInicio()">🏠 Lobby Principal</button>
+            <div id="lista-semestres"></div>
+        </div>
+        <div id="contenido-principal">
+            <div id="vista-inicio">
+                <div class="panel-modulo">
+                    <h3 style="color: var(--accent);">🎯 Objetivos Profesionales</h3>
+                    <textarea id="texto-objetivos" onchange="guardarDatosNube()"></textarea>
+                </div>
+            </div>
+
+            <div id="vista-semestre" class="hidden">
+                <h1 id="titulo-semestre-actual">Semestre</h1>
+                <div id="contenedor-materias" class="grid-materias"></div>
+            </div>
+
+            <div id="vista-materia" class="hidden">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <button onclick="cerrarMateria()" style="padding:10px;">← Volver</button>
+                    <h2 id="titulo-materia-activa" style="color:var(--accent);">Materia</h2>
+                    <button onclick="guardarDatosNube()" class="btn-submit" style="width:auto; padding:5px 20px;">Guardar en Nube</button>
+                </div>
+                <div class="panel-modulo">
+                    <h3>📝 Apuntes</h3>
+                    <textarea id="texto-apuntes" rows="12"></textarea>
+                </div>
             </div>
         </div>
-
-        <div id="main-dashboard" style="padding: 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Registros Universales</h2>
-                <button onclick="mostrarModalMundo()">+ Nuevo Proyecto</button>
-            </div>
-            <div id="grid-proyectos" class="grid"></div>
-        </div>
-    </div>
-
-    <div id="modal-usuarios" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--tarjeta); padding:30px; border:2px solid var(--primario); z-index:200; width:350px;">
-        <h3>Panel de Administrador</h3>
-        <p style="font-size:0.8rem; color:#888;">Lista de Archiveros Autorizados:</p>
-        <div id="lista-usuarios" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px;"></div>
-        <hr style="border:0.5px solid #333;">
-        <h4>Autorizar Nuevo</h4>
-        <input type="text" id="new-u" placeholder="Nombre de Usuario">
-        <input type="text" id="new-p" placeholder="Clave de Acceso">
-        <button onclick="crearUsuario()" style="width:100%">Dar de Alta</button>
-        <button onclick="document.getElementById('modal-usuarios').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px;">Cerrar</button>
-    </div>
-
-    <div id="modal-mundo" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--tarjeta); padding:30px; border:2px solid var(--primario); z-index:100; width:400px;">
-        <h3>Nuevo Horizonte</h3>
-        <input type="text" id="m-titulo" placeholder="Título del Mundo">
-        <input type="text" id="m-img" placeholder="URL de imagen de portada">
-        <button onclick="guardarMundo()" style="width:100%">Materializar</button>
-        <button onclick="document.getElementById('modal-mundo').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px;">Cancelar</button>
     </div>
 
     <script>
-        // CONFIGURACIÓN INICIAL
-        const ADMIN_USER = "admin"; 
-        let usuarios = JSON.parse(localStorage.getItem('usuarios_web')) || [{u: "admin", p: "1234"}];
-        let proyectos = JSON.parse(localStorage.getItem('proyectos_web')) || [];
-        let usuarioActual = "";
+        // 1. CONFIGURACIÓN FIREBASE (Tus datos de la imagen)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJVIlqlaDPcIld5-Zdf1J8rusx3rp_nZc",
+            authDomain: "miarchivopersonal-dc922.firebaseapp.com",
+            databaseURL: "https://miarchivopersonal-dc922-default-rtdb.firebaseio.com",
+            projectId: "miarchivopersonal-dc922",
+            storageBucket: "miarchivopersonal-dc922.firebasestorage.app",
+            messagingSenderId: "90845882531",
+            appId: "1:90845882531:web:a91b141d9233107ccff716"
+        };
 
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let dbLocal = null;
+        let sIdx = null, mIdx = null;
+
+        // 2. INTENTAR LOGIN Y CARGAR DESDE NUBE
         function intentarLogin() {
             const u = document.getElementById('user-input').value;
             const p = document.getElementById('pass-input').value;
-            const userFound = usuarios.find(user => user.u === u && user.p === p);
+
+            if(u === "admin" && p === "1234") {
+                document.getElementById('loading-msg').classList.remove('hidden');
+                
+                // Traer datos de Firebase
+                database.ref('universidad/').once('value').then((snapshot) => {
+                    dbLocal = snapshot.val();
+                    
+                    // Si la nube está vacía, crear estructura inicial
+                    if (!dbLocal) {
+                        dbLocal = { objetivos: "", semestres: [] };
+                        for (let s = 1; s <= 8; s++) {
+                            let materias = [];
+                            for (let m = 1; m <= 8; m++) { materias.push({ nombre: `Materia ${m}`, apuntes: "" }); }
+                            dbLocal.semestres.push({ num: s, materias: materias });
+                        }
+                    }
+                    
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    inicializarApp();
+                });
+            } else { alert("Error"); }
+        }
+
+        function inicializarApp() {
+            const lista = document.getElementById('lista-semestres');
+            lista.innerHTML = '';
+            dbLocal.semestres.forEach((s, i) => {
+                lista.innerHTML += `<button class="btn-semestre" onclick="abrirSemestre(${i})">Semestre ${s.num}</button>`;
+            });
+            document.getElementById('texto-objetivos').value = dbLocal.objetivos;
+        }
+
+        function abrirSemestre(idx) {
+            sIdx = idx;
+            document.getElementById('vista-inicio').classList.add('hidden');
+            document.getElementById('vista-materia').classList.add('hidden');
+            document.getElementById('vista-semestre').classList.remove('hidden');
+            document.getElementById('titulo-semestre-actual').innerText = `Semestre ${idx + 1}`;
             
-            if(userFound) {
-                usuarioActual = u;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('app-section').classList.remove('hidden');
-                document.getElementById('current-user-display').innerText = u;
-                
-                // RESTRICCIÓN DE SEGURIDAD: Solo admin ve el botón de usuarios
-                if(u === ADMIN_USER) {
-                    document.getElementById('btn-gestion-usuarios').classList.remove('hidden');
-                }
-                
-                renderizarProyectos();
-            } else { alert("Acceso denegado: Usuario o contraseña incorrectos."); }
+            const cont = document.getElementById('contenedor-materias');
+            cont.innerHTML = '';
+            dbLocal.semestres[idx].materias.forEach((m, i) => {
+                cont.innerHTML += `
+                    <div class="materia-card">
+                        <input type="text" value="${m.nombre}" onchange="actualizarNombre(${i}, this.value)" style="width:100%; border:none; text-align:center; font-weight:bold; background:transparent;">
+                        <button onclick="entrarMateria(${i})" style="margin-top:10px; width:100%;">Entrar →</button>
+                    </div>`;
+            });
         }
 
-        function cambiarTema(clase) {
-            document.getElementById('body-main').className = clase;
+        function entrarMateria(idx) {
+            mIdx = idx;
+            document.getElementById('vista-semestre').classList.add('hidden');
+            document.getElementById('vista-materia').classList.remove('hidden');
+            document.getElementById('titulo-materia-activa').innerText = dbLocal.semestres[sIdx].materias[idx].nombre;
+            document.getElementById('texto-apuntes').value = dbLocal.semestres[sIdx].materias[idx].apuntes;
         }
 
-        function abrirGestionUsuarios() {
-            if(usuarioActual !== ADMIN_USER) return; // Doble seguridad
-            document.getElementById('modal-usuarios').classList.remove('hidden');
-            actualizarListaUsuarios();
+        function actualizarNombre(idx, valor) {
+            dbLocal.semestres[sIdx].materias[idx].nombre = valor;
+            guardarDatosNube();
         }
 
-        function actualizarListaUsuarios() {
-            const lista = document.getElementById('lista-usuarios');
-            lista.innerHTML = usuarios.map(user => `
-                <div class="user-item">
-                    <span>👤 ${user.u}</span>
-                    ${user.u !== ADMIN_USER ? `<button onclick="borrarUsuario('${user.u}')" style="background:none; color:red; padding:0;">[Borrar]</button>` : ''}
-                </div>
-            `).join('');
+        function cerrarMateria() {
+            dbLocal.semestres[sIdx].materias[mIdx].apuntes = document.getElementById('texto-apuntes').value;
+            guardarDatosNube();
+            abrirSemestre(sIdx);
         }
 
-        function crearUsuario() {
-            const u = document.getElementById('new-u').value;
-            const p = document.getElementById('new-p').value;
-            if(u && p) {
-                if(usuarios.find(user => user.u === u)) {
-                    alert("Este usuario ya existe.");
-                    return;
-                }
-                usuarios.push({u, p});
-                localStorage.setItem('usuarios_web', JSON.stringify(usuarios));
-                document.getElementById('new-u').value = "";
-                document.getElementById('new-p').value = "";
-                actualizarListaUsuarios();
-            }
+        function abrirInicio() {
+            document.getElementById('vista-materia').classList.add('hidden');
+            document.getElementById('vista-semestre').classList.add('hidden');
+            document.getElementById('vista-inicio').classList.remove('hidden');
         }
 
-        function borrarUsuario(nombre) {
-            if(confirm(`¿Seguro que quieres revocar el acceso a ${nombre}?`)) {
-                usuarios = usuarios.filter(user => user.u !== nombre);
-                localStorage.setItem('usuarios_web', JSON.stringify(usuarios));
-                actualizarListaUsuarios();
-            }
-        }
-
-        function mostrarModalMundo() { document.getElementById('modal-mundo').classList.remove('hidden'); }
-
-        function guardarMundo() {
-            const titulo = document.getElementById('m-titulo').value;
-            const img = document.getElementById('m-img').value || 'https://via.placeholder.com/300x150?text=Novela';
-            if(titulo) {
-                proyectos.push({titulo, img, id: Date.now()});
-                localStorage.setItem('proyectos_web', JSON.stringify(proyectos));
-                document.getElementById('m-titulo').value = "";
-                document.getElementById('m-img').value = "";
-                document.getElementById('modal-mundo').classList.add('hidden');
-                renderizarProyectos();
-            }
-        }
-
-        function renderizarProyectos() {
-            const grid = document.getElementById('grid-proyectos');
-            grid.innerHTML = proyectos.map(p => `
-                <div class="card-mundo">
-                    <img src="${p.img}" alt="Portada">
-                    <div class="card-info">
-                        <h3>${p.titulo}</h3>
-                        <button onclick="borrarMundo(${p.id})" style="font-size:10px; background:transparent; color:#888;">Eliminar Proyecto</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function borrarMundo(id) {
-            if(confirm("¿Deseas eliminar este mundo permanentemente?")) {
-                proyectos = proyectos.filter(p => p.id !== id);
-                localStorage.setItem('proyectos_web', JSON.stringify(proyectos));
-                renderizarProyectos();
-            }
+        // 3. LA MAGIA: GUARDAR EN LA NUBE
+        function guardarDatosNube() {
+            dbLocal.objetivos = document.getElementById('texto-objetivos').value;
+            database.ref('universidad/').set(dbLocal).then(() => {
+                console.log("Sincronizado con Google.");
+            });
         }
     </script>
 </body>
 </html>
+
+
