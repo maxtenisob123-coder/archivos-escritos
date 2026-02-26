@@ -1,18 +1,17 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Virtual | Turismo en la Nube</title>
+    <title>Archivo de Mundos | Nube</title>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        /* MANTENEMOS TU PALETA DE COLORES "TRAVEL AGENCY" */
+        /* PALETA DE COLORES */
         :root {
             --bg-main: #fdfaf1; --bg-panel: #ffffff; --border: #f9b17a;  
             --input-bg: #e8ebf0; --text-main: #2d3250; --text-sub: #707793;     
@@ -32,70 +31,106 @@
         #login-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
         .login-card { background-color: var(--bg-panel); border: 2px solid var(--border); border-radius: 15px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px var(--shadow); width: 100%; max-width: 400px; }
         .login-input { width: 100%; padding: 15px; margin-bottom: 15px; background-color: var(--input-bg); border: none; border-radius: 8px; color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 15px; background-color: var(--accent); color: var(--text-btn); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 15px; background-color: var(--accent); color: var(--text-btn); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
-        /* CAMPUS VIRTUAL */
+        /* INTERFAZ PRINCIPAL */
         #app-section { display: flex; height: 100vh; width: 100%; }
         #sidebar { width: 250px; background-color: var(--bg-panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; padding-top: 20px; overflow-y: auto; }
-        .btn-semestre { background: transparent; color: var(--text-sub); border: none; padding: 15px 20px; text-align: left; font-size: 1.1rem; cursor: pointer; border-bottom: 1px solid var(--border); font-weight: 600; }
-        .btn-semestre:hover, .btn-semestre.activo { background-color: var(--accent); color: var(--text-btn); }
+        .btn-novela { background: transparent; color: var(--text-sub); border: none; padding: 15px 20px; text-align: left; font-size: 1.1rem; cursor: pointer; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .btn-novela:hover, .btn-novela.activo { background-color: var(--accent); color: var(--text-btn); }
         #contenido-principal { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: var(--bg-main); }
 
-        /* ELEMENTOS DEL AULA */
+        /* ELEMENTOS DEL EDITOR */
         .panel-modulo { background: var(--bg-panel); padding: 25px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
-        textarea { width: 100%; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 8px; padding: 15px; font-size: 1rem; resize: vertical; min-height: 100px; box-sizing: border-box; font-family: 'Raleway', sans-serif;}
-        .materia-card { background: var(--bg-panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 10px; padding: 20px; text-align: center; }
-        .grid-materias { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        textarea { width: 100%; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 8px; padding: 15px; font-size: 1.05rem; resize: vertical; min-height: 100px; box-sizing: border-box; font-family: 'Raleway', sans-serif; line-height: 1.6;}
+        .carpeta-card { background: var(--bg-panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 4px 10px var(--shadow); transition: transform 0.3s; }
+        .carpeta-card:hover { transform: translateY(-5px); }
+        .grid-carpetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        
+        /* SELECTOR DE TEMA */
+        .theme-switch-wrapper { position: absolute; top: 20px; right: 20px; }
+        .theme-select { padding: 8px; border-radius: 20px; border: 2px solid var(--accent); background: var(--bg-panel); color: var(--text-main); cursor: pointer; outline: none; }
     </style>
 </head>
 <body>
 
+    <div class="theme-switch-wrapper">
+        <select class="theme-select" id="theme-selector" onchange="cambiarTema(this.value)">
+            <option value="light">Modo Claro (Pergamino)</option>
+            <option value="dark">Modo Oscuro (Grimorio)</option>
+        </select>
+    </div>
+
     <div id="login-section">
         <div class="login-card">
-            <h1>Campus Virtual</h1>
-            <p>Sincronizado en la Nube</p>
-            <input type="text" id="user-input" class="login-input" placeholder="admin">
-            <input type="password" id="pass-input" class="login-input" placeholder="1234">
-            <button class="btn-submit" onclick="intentarLogin()">Acceder y Sincronizar</button>
-            <p id="loading-msg" class="hidden" style="color:var(--accent); margin-top:10px;">Cargando datos desde la nube...</p>
+            <h1>Archivo de Mundos</h1>
+            <p>Registro en la Nube</p>
+            <input type="text" id="user-input" class="login-input" placeholder="Usuario (admin)">
+            <input type="password" id="pass-input" class="login-input" placeholder="Contraseña (1234)">
+            <button class="btn-submit" onclick="intentarLogin()">Desbloquear Códice</button>
+            <p id="loading-msg" class="hidden" style="color:var(--accent); margin-top:15px; font-weight:bold;">Sincronizando universos...</p>
         </div>
     </div>
 
     <div id="app-section" class="hidden">
         <div id="sidebar">
-            <h2 style="text-align:center;">Turismo</h2>
-            <button class="btn-semestre activo" onclick="abrirInicio()">🏠 Lobby Principal</button>
-            <div id="lista-semestres"></div>
+            <h2 style="text-align:center; color: var(--text-main);">Mis Novelas</h2>
+            <button class="btn-novela activo" onclick="abrirInicio()">🏠 Sala de Escritura</button>
+            <div id="lista-novelas"></div>
+            <button onclick="agregarNuevaNovela()" style="margin: 15px; padding: 10px; background: transparent; border: 2px dashed var(--accent); color: var(--text-sub); border-radius: 8px; cursor: pointer; font-weight: bold;">+ Nuevo Universo</button>
         </div>
+        
         <div id="contenido-principal">
+            
             <div id="vista-inicio">
+                <div class="panel-modulo" style="text-align: center; background: linear-gradient(rgba(45, 50, 80, 0.8), rgba(45, 50, 80, 0.8)), url('https://images.unsplash.com/photo-1455390582262-044cdead2708?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') center/cover; color: white;">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 5px;">Bitácora de Autor</h1>
+                    <p>Organiza tus ideas, personajes y capítulos</p>
+                </div>
                 <div class="panel-modulo">
-                    <h3 style="color: var(--accent);">🎯 Objetivos Profesionales</h3>
-                    <textarea id="texto-objetivos" onchange="guardarDatosNube()"></textarea>
+                    <h3 style="color: var(--accent); margin-top: 0;">🎯 Objetivos de Escritura</h3>
+                    <textarea id="texto-objetivos" onchange="guardarDatosNube()" placeholder="Ej: Terminar el primer borrador este mes..."></textarea>
                 </div>
             </div>
 
-            <div id="vista-semestre" class="hidden">
-                <h1 id="titulo-semestre-actual">Semestre</h1>
-                <div id="contenedor-materias" class="grid-materias"></div>
+            <div id="vista-novela" class="hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h1 id="titulo-novela-actual" style="color: var(--text-main);">Título del Libro</h1>
+                    <button class="btn-submit" style="width:auto; padding:8px 15px; font-size: 0.9rem;" onclick="agregarCarpeta()">+ Nueva Carpeta</button>
+                </div>
+                <p style="color: var(--text-sub); margin-bottom: 25px;">Selecciona una sección para comenzar a escribir.</p>
+                <div id="contenedor-carpetas" class="grid-carpetas"></div>
             </div>
 
-            <div id="vista-materia" class="hidden">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <button onclick="cerrarMateria()" style="padding:10px;">← Volver</button>
-                    <h2 id="titulo-materia-activa" style="color:var(--accent);">Materia</h2>
-                    <button onclick="guardarDatosNube()" class="btn-submit" style="width:auto; padding:5px 20px;">Guardar en Nube</button>
+            <div id="vista-editor" class="hidden">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items: center;">
+                    <button onclick="cerrarEditor()" style="padding:10px 15px; background:var(--input-bg); color:var(--text-main); border:none; border-radius:6px; cursor:pointer; font-weight:bold;">← Volver al Libro</button>
+                    <h2 id="titulo-carpeta-activa" style="color:var(--accent); margin:0;">Nombre Carpeta</h2>
+                    <button onclick="guardarDatosNube()" class="btn-submit" style="width:auto; padding:10px 20px;">Guardar en Nube</button>
                 </div>
                 <div class="panel-modulo">
-                    <h3>📝 Apuntes</h3>
-                    <textarea id="texto-apuntes" rows="12"></textarea>
+                    <textarea id="texto-contenido" rows="18" placeholder="Comienza a redactar aquí..."></textarea>
                 </div>
             </div>
+            
         </div>
     </div>
 
     <script>
-        // 1. CONFIGURACIÓN FIREBASE (Tus datos de la imagen)
+        // --- TEMA CLARO/OSCURO ---
+        function cambiarTema(tema) {
+            if (tema === 'dark') document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+            localStorage.setItem('temaLibros', tema);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const temaGuardado = localStorage.getItem('temaLibros') || 'light';
+            document.getElementById('theme-selector').value = temaGuardado;
+            cambiarTema(temaGuardado);
+        });
+
+        // --- CONFIGURACIÓN FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBJVIlqlaDPcIld5-Zdf1J8rusx3rp_nZc",
             authDomain: "miarchivopersonal-dc922.firebaseapp.com",
@@ -110,9 +145,9 @@
         const database = firebase.database();
 
         let dbLocal = null;
-        let sIdx = null, mIdx = null;
+        let nIdx = null, cIdx = null;
 
-        // 2. INTENTAR LOGIN Y CARGAR DESDE NUBE
+        // --- LOGIN Y CARGA DE DATOS ---
         function intentarLogin() {
             const u = document.getElementById('user-input').value;
             const p = document.getElementById('pass-input').value;
@@ -120,88 +155,132 @@
             if(u === "admin" && p === "1234") {
                 document.getElementById('loading-msg').classList.remove('hidden');
                 
-                // Traer datos de Firebase
-                database.ref('universidad/').once('value').then((snapshot) => {
+                database.ref('archivo_mundos/').once('value').then((snapshot) => {
                     dbLocal = snapshot.val();
                     
-                    // Si la nube está vacía, crear estructura inicial
+                    // Si está vacío, inyectamos una estructura base para que no arranques en blanco
                     if (!dbLocal) {
-                        dbLocal = { objetivos: "", semestres: [] };
-                        for (let s = 1; s <= 8; s++) {
-                            let materias = [];
-                            for (let m = 1; m <= 8; m++) { materias.push({ nombre: `Materia ${m}`, apuntes: "" }); }
-                            dbLocal.semestres.push({ num: s, materias: materias });
-                        }
+                        dbLocal = { 
+                            lobby: { objetivos: "Escribir al menos 500 palabras diarias." },
+                            novelas: [
+                                {
+                                    titulo: "El Polen de la Raíz",
+                                    carpetas: [
+                                        { nombre: "Personajes", contenido: "Protagonista: 28 años, ex-barista originario de Tlaxcala. Habilidades: Manipulación de electricidad y mejora física." },
+                                        { nombre: "El Mundo", contenido: "Una raíz mágica consumió América, Europa y Asia. Zonas seguras restantes: Japón, Australia, Cuba y Groenlandia. Las frutas monstruosas y el polen tóxico dominan el ambiente." },
+                                        { nombre: "Capítulo 1", contenido: "" }
+                                    ]
+                                },
+                                {
+                                    titulo: "Proyecto Sci-Fi",
+                                    carpetas: [
+                                        { nombre: "Personajes", contenido: "Lyra, Evie, Samuel, Héctor, Alan, Selene y Andrea.\nAntagonistas principales: Maxwell Xolocotzi Zempoalteca." },
+                                        { nombre: "Conceptos", contenido: "Uso de armaduras futuristas, habilidades psiónicas y 'El Domo'." },
+                                        { nombre: "Niveles de Poder", contenido: "Sistema de clasificación de fuerza..." }
+                                    ]
+                                }
+                            ]
+                        };
                     }
                     
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('app-section').classList.remove('hidden');
                     inicializarApp();
                 });
-            } else { alert("Error"); }
+            } else { alert("Credenciales incorrectas."); }
         }
 
+        // --- NAVEGACIÓN ---
         function inicializarApp() {
-            const lista = document.getElementById('lista-semestres');
-            lista.innerHTML = '';
-            dbLocal.semestres.forEach((s, i) => {
-                lista.innerHTML += `<button class="btn-semestre" onclick="abrirSemestre(${i})">Semestre ${s.num}</button>`;
-            });
-            document.getElementById('texto-objetivos').value = dbLocal.objetivos;
+            renderizarSidebar();
+            document.getElementById('texto-objetivos').value = dbLocal.lobby.objetivos || "";
         }
 
-        function abrirSemestre(idx) {
-            sIdx = idx;
+        function renderizarSidebar() {
+            const lista = document.getElementById('lista-novelas');
+            lista.innerHTML = '';
+            dbLocal.novelas.forEach((n, i) => {
+                lista.innerHTML += `<button class="btn-novela" onclick="abrirNovela(${i})">📖 ${n.titulo}</button>`;
+            });
+        }
+
+        function abrirInicio() {
+            document.getElementById('vista-editor').classList.add('hidden');
+            document.getElementById('vista-novela').classList.add('hidden');
+            document.getElementById('vista-inicio').classList.remove('hidden');
+            document.querySelectorAll('.btn-novela').forEach(b => b.classList.remove('activo'));
+            document.querySelector('.btn-novela').classList.add('activo');
+        }
+
+        function abrirNovela(idx) {
+            nIdx = idx;
             document.getElementById('vista-inicio').classList.add('hidden');
-            document.getElementById('vista-materia').classList.add('hidden');
-            document.getElementById('vista-semestre').classList.remove('hidden');
-            document.getElementById('titulo-semestre-actual').innerText = `Semestre ${idx + 1}`;
+            document.getElementById('vista-editor').classList.add('hidden');
+            document.getElementById('vista-novela').classList.remove('hidden');
             
-            const cont = document.getElementById('contenedor-materias');
+            document.querySelectorAll('.btn-novela').forEach(b => b.classList.remove('activo'));
+            document.querySelectorAll('.btn-novela')[idx + 1].classList.add('activo');
+            
+            document.getElementById('titulo-novela-actual').innerText = dbLocal.novelas[idx].titulo;
+            
+            const cont = document.getElementById('contenedor-carpetas');
             cont.innerHTML = '';
-            dbLocal.semestres[idx].materias.forEach((m, i) => {
+            dbLocal.novelas[idx].carpetas.forEach((c, i) => {
                 cont.innerHTML += `
-                    <div class="materia-card">
-                        <input type="text" value="${m.nombre}" onchange="actualizarNombre(${i}, this.value)" style="width:100%; border:none; text-align:center; font-weight:bold; background:transparent;">
-                        <button onclick="entrarMateria(${i})" style="margin-top:10px; width:100%;">Entrar →</button>
+                    <div class="carpeta-card">
+                        <input type="text" value="${c.nombre}" onchange="actualizarNombreCarpeta(${i}, this.value)" style="width:100%; border:none; border-bottom:1px dashed var(--text-sub); text-align:center; font-weight:bold; background:transparent; color:var(--text-main); font-size:1.1rem; margin-bottom:15px; padding-bottom:5px;">
+                        <button class="btn-submit" style="font-size:0.9rem; padding:10px;" onclick="entrarEditor(${i})">Escribir / Leer →</button>
                     </div>`;
             });
         }
 
-        function entrarMateria(idx) {
-            mIdx = idx;
-            document.getElementById('vista-semestre').classList.add('hidden');
-            document.getElementById('vista-materia').classList.remove('hidden');
-            document.getElementById('titulo-materia-activa').innerText = dbLocal.semestres[sIdx].materias[idx].nombre;
-            document.getElementById('texto-apuntes').value = dbLocal.semestres[sIdx].materias[idx].apuntes;
+        // --- GESTIÓN DE CONTENIDO ---
+        function agregarNuevaNovela() {
+            const titulo = prompt("Nombre de tu nueva novela:");
+            if(titulo) {
+                dbLocal.novelas.push({ titulo: titulo, carpetas: [{nombre: "Personajes", contenido: ""}, {nombre: "Capítulo 1", contenido: ""}] });
+                guardarDatosNube();
+                renderizarSidebar();
+                abrirNovela(dbLocal.novelas.length - 1);
+            }
         }
 
-        function actualizarNombre(idx, valor) {
-            dbLocal.semestres[sIdx].materias[idx].nombre = valor;
+        function agregarCarpeta() {
+            dbLocal.novelas[nIdx].carpetas.push({ nombre: "Nueva Sección", contenido: "" });
+            guardarDatosNube();
+            abrirNovela(nIdx);
+        }
+
+        function actualizarNombreCarpeta(idx, valor) {
+            dbLocal.novelas[nIdx].carpetas[idx].nombre = valor;
             guardarDatosNube();
         }
 
-        function cerrarMateria() {
-            dbLocal.semestres[sIdx].materias[mIdx].apuntes = document.getElementById('texto-apuntes').value;
+        function entrarEditor(idx) {
+            cIdx = idx;
+            document.getElementById('vista-novela').classList.add('hidden');
+            document.getElementById('vista-editor').classList.remove('hidden');
+            document.getElementById('titulo-carpeta-activa').innerText = dbLocal.novelas[nIdx].carpetas[idx].nombre;
+            document.getElementById('texto-contenido').value = dbLocal.novelas[nIdx].carpetas[idx].contenido;
+        }
+
+        function cerrarEditor() {
+            dbLocal.novelas[nIdx].carpetas[cIdx].contenido = document.getElementById('texto-contenido').value;
             guardarDatosNube();
-            abrirSemestre(sIdx);
+            abrirNovela(nIdx);
         }
 
-        function abrirInicio() {
-            document.getElementById('vista-materia').classList.add('hidden');
-            document.getElementById('vista-semestre').classList.add('hidden');
-            document.getElementById('vista-inicio').classList.remove('hidden');
-        }
-
-        // 3. LA MAGIA: GUARDAR EN LA NUBE
+        // --- MAGIA EN LA NUBE ---
         function guardarDatosNube() {
-            dbLocal.objetivos = document.getElementById('texto-objetivos').value;
-            database.ref('universidad/').set(dbLocal).then(() => {
-                console.log("Sincronizado con Google.");
+            // Guardamos objetivos del lobby si estamos ahí
+            if(!document.getElementById('vista-inicio').classList.contains('hidden')) {
+                dbLocal.lobby.objetivos = document.getElementById('texto-objetivos').value;
+            }
+            // Subimos todo el JSON a Firebase
+            database.ref('archivo_mundos/').set(dbLocal).then(() => {
+                console.log("Universos sincronizados correctamente.");
             });
         }
     </script>
 </body>
 </html>
-
-
