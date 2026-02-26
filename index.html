@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivo de Mundos | Control Total</title>
+    <style>
+        :root {
+            --fondo: #0f0f0f;
+            --tarjeta: #1a1a1a;
+            --primario: #58181F; 
+            --acento: #912b35;
+            --texto: #d1d1d1;
+        }
+
+        .tema-slytherin { --primario: #1a472a; --acento: #2a623d; --fondo: #070d08; }
+        .tema-darksouls { --primario: #3c3c3c; --acento: #8a7038; --fondo: #0a0a0a; }
+        .tema-scifi { --primario: #004d4d; --acento: #008080; --fondo: #020a0a; }
+
+        body {
+            background-color: var(--fondo);
+            color: var(--texto);
+            font-family: 'Garamond', serif;
+            margin: 0;
+            transition: all 0.5s ease;
+        }
+
+        .hidden { display: none !important; }
+
+        .header-controls {
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primario);
+        }
+
+        .card-mundo {
+            background: var(--tarjeta);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .card-mundo img { width: 100%; height: 150px; object-fit: cover; background: #222; }
+        .card-mundo:hover { border-color: var(--acento); transform: translateY(-5px); }
+        .card-info { padding: 15px; }
+
+        input, textarea, select {
+            width: 100%; padding: 10px; margin: 8px 0;
+            background: #252525; border: 1px solid #444; color: white; border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px; background: var(--primario); color: white;
+            border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+        button:hover { background: var(--acento); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
+        
+        /* Estilo para la lista de usuarios */
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body id="body-main">
+
+    <div id="login-section" style="display:flex; justify-content:center; align-items:center; height:100vh;">
+        <div style="background:var(--tarjeta); padding:40px; border:1px solid var(--primario); text-align:center; border-radius:10px;">
+            <h1 style="color:var(--acento)">ARCHIVO DE MUNDOS</h1>
+            <input type="text" id="user-input" placeholder="Usuario">
+            <input type="password" id="pass-input" placeholder="Contraseña">
+            <button onclick="intentarLogin()">DESCIFRAR</button>
+        </div>
+    </div>
+
+    <div id="app-section" class="hidden">
+        <div class="header-controls">
+            <span>Archivero: <b id="current-user-display" style="color:var(--acento)"></b></span>
+            <div>
+                <select onchange="cambiarTema(this.value)" style="width: auto;">
+                    <option value="">Tema: Clásico Vino</option>
+                    <option value="tema-slytherin">Tema: Slytherin</option>
+                    <option value="tema-darksouls">Tema: Cenizas</option>
+                    <option value="tema-scifi">Tema: Selene II</option>
+                </select>
+                <button id="btn-gestion-usuarios" onclick="abrirGestionUsuarios()" class="hidden" style="background:var(--acento);">Gestionar Usuarios</button>
+                <button onclick="location.reload()" style="background:#444;">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div id="main-dashboard" style="padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Registros Universales</h2>
+                <button onclick="mostrarModalMundo()">+ Nuevo Proyecto</button>
+            </div>
+            <div id="grid-proyectos" class="grid"></div>
+        </div>
+    </div>
+
+    <div id="modal-usuarios" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--tarjeta); padding:30px; border:2px solid var(--primario); z-index:200; width:350px;">
+        <h3>Panel de Administrador</h3>
+        <p style="font-size:0.8rem; color:#888;">Lista de Archiveros Autorizados:</p>
+        <div id="lista-usuarios" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px;"></div>
+        <hr style="border:0.5px solid #333;">
+        <h4>Autorizar Nuevo</h4>
+        <input type="text" id="new-u" placeholder="Nombre de Usuario">
+        <input type="text" id="new-p" placeholder="Clave de Acceso">
+        <button onclick="crearUsuario()" style="width:100%">Dar de Alta</button>
+        <button onclick="document.getElementById('modal-usuarios').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px;">Cerrar</button>
+    </div>
+
+    <div id="modal-mundo" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--tarjeta); padding:30px; border:2px solid var(--primario); z-index:100; width:400px;">
+        <h3>Nuevo Horizonte</h3>
+        <input type="text" id="m-titulo" placeholder="Título del Mundo">
+        <input type="text" id="m-img" placeholder="URL de imagen de portada">
+        <button onclick="guardarMundo()" style="width:100%">Materializar</button>
+        <button onclick="document.getElementById('modal-mundo').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px;">Cancelar</button>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN INICIAL
+        const ADMIN_USER = "admin"; 
+        let usuarios = JSON.parse(localStorage.getItem('usuarios_web')) || [{u: "admin", p: "1234"}];
+        let proyectos = JSON.parse(localStorage.getItem('proyectos_web')) || [];
+        let usuarioActual = "";
+
+        function intentarLogin() {
+            const u = document.getElementById('user-input').value;
+            const p = document.getElementById('pass-input').value;
+            const userFound = usuarios.find(user => user.u === u && user.p === p);
+            
+            if(userFound) {
+                usuarioActual = u;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('hidden');
+                document.getElementById('current-user-display').innerText = u;
+                
+                // RESTRICCIÓN DE SEGURIDAD: Solo admin ve el botón de usuarios
+                if(u === ADMIN_USER) {
+                    document.getElementById('btn-gestion-usuarios').classList.remove('hidden');
+                }
+                
+                renderizarProyectos();
+            } else { alert("Acceso denegado: Usuario o contraseña incorrectos."); }
+        }
+
+        function cambiarTema(clase) {
+            document.getElementById('body-main').className = clase;
+        }
+
+        function abrirGestionUsuarios() {
+            if(usuarioActual !== ADMIN_USER) return; // Doble seguridad
+            document.getElementById('modal-usuarios').classList.remove('hidden');
+            actualizarListaUsuarios();
+        }
+
+        function actualizarListaUsuarios() {
+            const lista = document.getElementById('lista-usuarios');
+            lista.innerHTML = usuarios.map(user => `
+                <div class="user-item">
+                    <span>👤 ${user.u}</span>
+                    ${user.u !== ADMIN_USER ? `<button onclick="borrarUsuario('${user.u}')" style="background:none; color:red; padding:0;">[Borrar]</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function crearUsuario() {
+            const u = document.getElementById('new-u').value;
+            const p = document.getElementById('new-p').value;
+            if(u && p) {
+                if(usuarios.find(user => user.u === u)) {
+                    alert("Este usuario ya existe.");
+                    return;
+                }
+                usuarios.push({u, p});
+                localStorage.setItem('usuarios_web', JSON.stringify(usuarios));
+                document.getElementById('new-u').value = "";
+                document.getElementById('new-p').value = "";
+                actualizarListaUsuarios();
+            }
+        }
+
+        function borrarUsuario(nombre) {
+            if(confirm(`¿Seguro que quieres revocar el acceso a ${nombre}?`)) {
+                usuarios = usuarios.filter(user => user.u !== nombre);
+                localStorage.setItem('usuarios_web', JSON.stringify(usuarios));
+                actualizarListaUsuarios();
+            }
+        }
+
+        function mostrarModalMundo() { document.getElementById('modal-mundo').classList.remove('hidden'); }
+
+        function guardarMundo() {
+            const titulo = document.getElementById('m-titulo').value;
+            const img = document.getElementById('m-img').value || 'https://via.placeholder.com/300x150?text=Novela';
+            if(titulo) {
+                proyectos.push({titulo, img, id: Date.now()});
+                localStorage.setItem('proyectos_web', JSON.stringify(proyectos));
+                document.getElementById('m-titulo').value = "";
+                document.getElementById('m-img').value = "";
+                document.getElementById('modal-mundo').classList.add('hidden');
+                renderizarProyectos();
+            }
+        }
+
+        function renderizarProyectos() {
+            const grid = document.getElementById('grid-proyectos');
+            grid.innerHTML = proyectos.map(p => `
+                <div class="card-mundo">
+                    <img src="${p.img}" alt="Portada">
+                    <div class="card-info">
+                        <h3>${p.titulo}</h3>
+                        <button onclick="borrarMundo(${p.id})" style="font-size:10px; background:transparent; color:#888;">Eliminar Proyecto</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function borrarMundo(id) {
+            if(confirm("¿Deseas eliminar este mundo permanentemente?")) {
+                proyectos = proyectos.filter(p => p.id !== id);
+                localStorage.setItem('proyectos_web', JSON.stringify(proyectos));
+                renderizarProyectos();
+            }
+        }
+    </script>
+</body>
+</html>
