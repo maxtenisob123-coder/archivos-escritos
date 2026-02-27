@@ -6,14 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yggdrasil | Red de Autores</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Raleway:wght@400;600;800&display=swap" rel="stylesheet">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 
     <style>
         /* =========================================
-           PALETA RPG (Oro, Fuego y Obsidiana)
+           PALETA RPG
            ========================================= */
         :root {
             --bg-void: #0a0a0c; --bg-panel: #16181d; --border-panel: #2a2d36;   
@@ -25,17 +24,18 @@
         h1, h2, h3, h4, .epic-font { font-family: 'Cinzel', serif; text-transform: uppercase; }
         .hidden { display: none !important; }
 
-        /* CORTAFUEGOS (LOGIN) */
+        /* CORTAFUEGOS */
         #login-section { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-void); background-image: linear-gradient(rgba(10,10,12,0.8), rgba(10,10,12,0.95)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         .login-card { background: rgba(22, 24, 29, 0.9); border: 1px solid var(--accent-gold); border-radius: 4px; padding: 40px; text-align: center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); width: 100%; max-width: 350px; backdrop-filter: blur(10px); border-left: 5px solid var(--accent-gold); }
         .login-input { width: 100%; padding: 15px; margin-bottom: 20px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-panel); border-radius: 2px; color: white; font-size: 1rem; box-sizing: border-box; text-align: center; font-family: 'Raleway', sans-serif; outline: none; transition: 0.3s; }
         .login-input:focus { border-color: var(--accent-gold); box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2); }
 
-        /* BOTONES GLOBALES */
         button.btn-action { background: var(--accent-fire); color: white; border: none; padding: 12px 25px; border-radius: 2px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 800; text-transform: uppercase; transition: 0.3s; letter-spacing: 1px; }
         button.btn-action:hover { filter: brightness(1.2); box-shadow: 0 0 15px rgba(226, 88, 34, 0.4); }
         button.btn-secondary { background: transparent; border: 1px solid var(--text-sub); color: var(--text-sub); }
         button.btn-secondary:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+        button.btn-danger { background: transparent; border: 1px solid #ff4c4c; color: #ff4c4c; }
+        button.btn-danger:hover { background: #ff4c4c; color: white; box-shadow: 0 0 15px rgba(255, 76, 76, 0.4); }
 
         /* TOP NAV */
         #top-nav { background: rgba(22, 24, 29, 0.95); border-bottom: 1px solid var(--border-panel); display: flex; justify-content: space-between; align-items: center; padding: 0 40px; height: 70px; backdrop-filter: blur(10px); z-index: 100; flex-shrink: 0;}
@@ -44,56 +44,50 @@
         .btn-nav { background: transparent; color: var(--text-sub); border: none; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; position: relative; height: 100%; transition: 0.3s; font-family: 'Raleway', sans-serif; }
         .btn-nav:hover, .btn-nav.activo { color: var(--text-main); }
         .btn-nav.activo::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-gold); box-shadow: 0 -2px 10px var(--accent-gold); }
-        .user-controls { display: flex; align-items: center; gap: 20px; }
 
-        /* ÁREA PRINCIPAL Y VISTAS */
+        /* ÁREA PRINCIPAL */
         #main-content { flex-grow: 1; overflow-y: auto; position: relative; }
         .view-container { padding: 40px; max-width: 1400px; margin: 0 auto; height: 100%; box-sizing: border-box; }
 
-        /* HOME / INVENTARIO */
+        /* INVENTARIO */
         .home-layout { display: flex; gap: 40px; height: 100%; }
         .home-sidebar { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
         .home-inventory { flex-grow: 1; display: flex; flex-direction: column; }
         .panel { background: var(--bg-panel); border: 1px solid var(--border-panel); padding: 25px; border-left: 3px solid var(--accent-gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .avatar-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--accent-gold); margin: 0 auto 15px auto; background-image: url('https://images.unsplash.com/photo-1535295972055-1c762f4483e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'); background-size: cover; background-position: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
-        .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; overflow-y: auto; padding-right: 10px; align-content: start; }
-        .inv-card { background: #111; border: 1px solid var(--border-panel); aspect-ratio: 2/3; position: relative; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; text-align: center; background-size: cover; background-position: center; border-radius: 2px; }
-        .inv-card:hover { transform: translateY(-5px); border-color: var(--accent-gold); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .inv-card::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%); }
-        .inv-title { position: relative; z-index: 2; font-size: 1rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px #000; color: var(--accent-gold); }
+        .avatar-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--accent-gold); margin: 0 auto 15px auto; background-image: url('https://images.unsplash.com/photo-1535295972055-1c762f4483e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'); background-size: cover; background-position: center;}
+        
+        .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; align-content: start; }
+        .inv-card { background: #111; border: 1px solid var(--border-panel); position: relative; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s; }
+        .inv-card:hover { border-color: var(--accent-gold); transform: translateY(-5px); }
+        .inv-cover { width: 100%; aspect-ratio: 2/3; background-size: cover; background-position: center; position: relative; }
+        .inv-cover::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 60%); }
+        .inv-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent-gold); color: var(--accent-gold); font-size: 0.7rem; padding: 3px 8px; border-radius: 2px; font-weight: bold; }
+        .inv-info { padding: 15px; display: flex; flex-direction: column; gap: 10px; flex-grow: 1; background: var(--bg-panel); }
 
-        /* EL GRAN ARCHIVO */
+        /* ARCHIVO GLOBAL */
         .archivo-container { display: flex; flex-direction: column; gap: 40px; padding: 0 0 40px 0; max-width: 100%; }
         .cinematic-banner { width: 100%; height: 60vh; min-height: 400px; position: relative; display: flex; align-items: center; padding: 0 10%; box-sizing: border-box; background-size: cover; background-position: center; border-bottom: 2px solid var(--accent-gold); }
-        .cinematic-banner::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to right, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.4) 50%, rgba(10,10,12,0.8) 100%); }
-        .banner-content { position: relative; z-index: 2; max-width: 600px; }
-        .banner-title { font-family: 'Cinzel', serif; font-size: 4.5rem; font-weight: 900; line-height: 1; margin: 0 0 10px 0; text-transform: uppercase; text-shadow: 0 4px 20px rgba(0,0,0,0.8); color: var(--text-main); }
-        .banner-meta { display: inline-block; background: var(--accent-gold); color: #000; font-weight: 800; font-size: 0.8rem; padding: 4px 10px; margin-bottom: 20px; letter-spacing: 1px; }
+        .cinematic-banner::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to right, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.4) 50%, rgba(10,10,12,0.9) 100%); }
+        .banner-content { position: relative; z-index: 2; max-width: 700px; }
 
-        /* LA TABERNA */
+        /* TABERNA */
         .chat-container { background: var(--bg-panel); border: 1px solid var(--border-panel); height: 70vh; display: flex; flex-direction: column; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
-        .chat-msg { display: flex; flex-direction: column; margin-bottom: 15px; }
-        .chat-msg.me { align-items: flex-end; }
-        .chat-msg .autor { font-size: 0.8rem; color: var(--accent-gold); margin-bottom: 5px; font-weight: bold; }
-        .chat-msg .texto { background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 4px; border-left: 2px solid var(--text-sub); display: inline-block; max-width: 80%; line-height: 1.4; }
-        .chat-msg.me .texto { background: rgba(226, 88, 34, 0.1); border-left: none; border-right: 2px solid var(--accent-fire); }
 
-        /* LA HERRERÍA */
-        .herreria-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 1px solid var(--border-panel); padding-bottom: 20px; }
-        .forge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        
+        /* HERRERÍA */
         .mesa-diseno { display: grid; grid-template-columns: 300px 1fr; gap: 40px; background: var(--bg-panel); padding: 30px; border: 1px solid var(--border-panel); border-left: 3px solid var(--accent-fire); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
         .mesa-portada { width: 100%; aspect-ratio: 2/3; background-size: cover; background-position: center; border: 2px solid var(--border-panel); border-radius: 4px; position: relative; }
         .input-herreria { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-panel); color: white; font-family: 'Raleway'; margin-bottom: 15px; border-radius: 2px; box-sizing: border-box; }
         .input-herreria:focus { border-color: var(--accent-fire); outline: none; }
-        
         .capitulo-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
-        .capitulo-item { background: rgba(0,0,0,0.3); border: 1px solid var(--border-panel); padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
-        .capitulo-item:hover { border-color: var(--accent-gold); background: rgba(212, 175, 55, 0.05); }
+        .capitulo-item { background: rgba(0,0,0,0.3); border: 1px solid var(--border-panel); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        .yunque-editor { background: #0f1015; border: 1px solid var(--border-panel); padding: 30px; height: 65vh; border-left: 3px solid var(--accent-fire); box-shadow: inset 0 0 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
+        /* EL LECTOR (NUEVO) */
+        .lector-layout { display: grid; grid-template-columns: 250px 1fr; gap: 30px; height: calc(100vh - 150px); background: var(--bg-panel); border: 1px solid var(--border-panel); border-radius: 4px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .lector-indice { background: rgba(0,0,0,0.5); border-right: 1px solid var(--border-panel); overflow-y: auto; padding: 20px; }
+        .lector-cap-btn { background: transparent; color: var(--text-sub); border: none; text-align: left; width: 100%; padding: 10px; margin-bottom: 5px; cursor: pointer; border-left: 2px solid transparent; font-family: 'Cinzel', serif; transition: 0.2s; }
+        .lector-cap-btn:hover, .lector-cap-btn.activo { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(212, 175, 55, 0.05); }
+        .lector-contenido { padding: 40px 60px; overflow-y: auto; font-size: 1.15rem; line-height: 1.8; color: #d1d5db; }
         
-        /* MODAL DE ADMIN */
         #admin-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-panel); border: 1px solid var(--accent-gold); padding: 30px; z-index: 2000; width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); border-left: 5px solid var(--accent-gold); }
     </style>
 </head>
@@ -106,7 +100,7 @@
             <input type="text" id="user-input" class="login-input" placeholder="Nombre de Aventurero">
             <input type="password" id="pass-input" class="login-input" placeholder="Palabra Secreta">
             <button class="btn-action" style="width: 100%;" onclick="intentarLogin()">Cruzar el Umbral</button>
-            <p id="login-error" class="hidden" style="color: #ff4c4c; font-size: 0.85rem; margin-top: 15px;">Las credenciales son incorrectas.</p>
+            <p id="login-error" class="hidden" style="color: #ff4c4c; font-size: 0.85rem; margin-top: 15px;">Credenciales incorrectas.</p>
         </div>
     </div>
 
@@ -116,8 +110,8 @@
         <input type="text" id="new-u" class="login-input" placeholder="Nuevo Usuario" style="padding: 10px; margin-bottom: 10px;">
         <input type="password" id="new-p" class="login-input" placeholder="Contraseña" style="padding: 10px; margin-bottom: 10px;">
         <select id="new-rol" class="login-input" style="padding: 10px; margin-bottom: 20px;">
-            <option value="lector">Rol: Lector (Solo explora)</option>
-            <option value="escritor">Rol: Creador (Forja Mundos)</option>
+            <option value="lector">Rol: Lector</option>
+            <option value="escritor">Rol: Creador (Escritor)</option>
         </select>
         <div style="display: flex; gap: 10px;">
             <button class="btn-action btn-secondary" style="flex:1;" onclick="document.getElementById('admin-modal').classList.add('hidden')">Cerrar</button>
@@ -135,8 +129,8 @@
         </div>
         <div class="user-controls">
             <span id="user-display-name" style="font-weight: 600; letter-spacing: 1px; color: var(--accent-gold);">User</span>
-            <button id="btn-admin" class="btn-action hidden" style="padding: 8px 15px; font-size: 0.7rem; background: #4a235a; color: white;" onclick="document.getElementById('admin-modal').classList.remove('hidden'); renderizarListaUsuarios();">Gestión de Almas</button>
-            <button class="btn-secondary" style="padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 2px;" onclick="location.reload()">Desconectar</button>
+            <button id="btn-admin" class="btn-action hidden" style="padding: 8px 15px; font-size: 0.7rem; background: #4a235a; color: white;" onclick="document.getElementById('admin-modal').classList.remove('hidden'); renderizarListaUsuarios();">Admin</button>
+            <button class="btn-secondary" style="padding: 8px 15px; font-size: 0.7rem;" onclick="location.reload()">Salir</button>
         </div>
     </nav>
 
@@ -153,7 +147,7 @@
                 </aside>
                 <section class="home-inventory">
                     <h1 class="epic-font" style="margin-top: 0;">Mi Inventario</h1>
-                    <p style="color: var(--text-sub); margin-bottom: 30px;">Tus grimorios equipados, sincronizados en la nube.</p>
+                    <p style="color: var(--text-sub); margin-bottom: 30px;">Aquí guardas tus grimorios para leerlos cuando quieras.</p>
                     <div class="inv-grid" id="grid-inventario-personal"></div>
                 </section>
             </div>
@@ -163,44 +157,70 @@
             <div class="archivo-container" id="contenedor-archivo-global"></div>
         </div>
 
+        <div id="vista-lector" class="view-container hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button class="btn-secondary" style="padding: 8px 15px;" onclick="cerrarLector()">← Volver</button>
+                <h1 id="lector-titulo" class="epic-font" style="margin: 0; color: var(--accent-gold);">Título del Grimorio</h1>
+                <div style="width: 100px;"></div> </div>
+            
+            <div class="lector-layout">
+                <div class="lector-indice">
+                    <h3 class="epic-font" style="color: var(--text-sub); font-size: 0.9rem; border-bottom: 1px solid var(--border-panel); padding-bottom: 10px;">Índice</h3>
+                    <div id="lector-lista-capitulos"></div>
+                </div>
+                <div class="lector-contenido" id="lector-contenido-texto">
+                    </div>
+            </div>
+        </div>
+
         <div id="vista-taberna" class="view-container hidden">
             <h1 class="epic-font" style="margin-top: 0; color: var(--accent-gold);">La Taberna Global</h1>
             <div class="chat-container">
-                <div id="chat-messages" style="flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;">
-                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-left: 3px solid var(--accent-gold); margin-bottom: 20px;">
-                        <span style="color: var(--accent-gold); font-weight: bold; font-size: 0.8rem;">SISTEMA</span>
-                        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-sub);">Conectado a Firebase. Chat en vivo habilitado.</p>
-                    </div>
-                </div>
+                <div id="chat-messages" style="flex-grow: 1; padding: 20px; overflow-y: auto;"></div>
                 <div style="display: flex; gap: 10px; padding: 20px; border-top: 1px solid var(--border-panel); background: rgba(0,0,0,0.5);">
-                    <input type="text" id="chat-input" style="flex-grow: 1; padding: 15px; background: #0a0a0c; border: 1px solid var(--border-panel); color: white; outline: none; font-family: 'Raleway';" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') enviarMensajeChat()">
+                    <input type="text" id="chat-input" style="flex-grow: 1; padding: 15px; background: #0a0a0c; border: 1px solid var(--border-panel); color: white; outline: none;" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') enviarMensajeChat()">
                     <button class="btn-action" style="width: auto;" onclick="enviarMensajeChat()">Enviar</button>
                 </div>
             </div>
         </div>
 
         <div id="vista-herreria" class="view-container hidden">
+            
             <div id="herreria-armeria">
-                <div class="herreria-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 1px solid var(--border-panel); padding-bottom: 20px;">
                     <div>
                         <h1 class="epic-font" style="margin: 0; color: var(--accent-fire);">Taller de Forja</h1>
-                        <p style="color: var(--text-sub); margin: 5px 0 0 0;">Forjado en tiempo real en la nube de Google.</p>
+                        <p style="color: var(--text-sub); margin: 5px 0 0 0;">Crea, edita o destruye tus mundos.</p>
                     </div>
                     <button class="btn-action" onclick="forjarNuevoMundo()">+ Forjar Nuevo Mundo</button>
                 </div>
-                <div class="forge-grid" id="grid-mis-proyectos"></div>
+                <div class="inv-grid" id="grid-mis-proyectos"></div>
             </div>
 
             <div id="herreria-mesa" class="hidden">
                 <button class="btn-secondary" style="padding: 8px 15px; margin-bottom: 20px;" onclick="volverArmeria()">← Volver al Taller</button>
+                
                 <div class="mesa-diseno">
                     <div>
-                        <div id="mesa-portada-preview" class="mesa-portada"></div>
+                        <div id="mesa-portada-preview" class="mesa-portada">
+                            <span id="mesa-estado-badge" class="inv-badge">Estado</span>
+                        </div>
                         <label style="color: var(--text-sub); font-size: 0.8rem; margin-top: 15px; display: block;">URL de Portada:</label>
                         <input type="text" id="mesa-input-img" class="input-herreria" placeholder="Pega una URL..." onchange="actualizarProyectoNube()">
+                        
+                        <button class="btn-action btn-danger" style="width: 100%; margin-top: 30px;" onclick="destruirMundoNube()">🔥 Destruir Grimorio Completo</button>
                     </div>
                     <div>
                         <input type="text" id="mesa-input-titulo" class="input-herreria" style="font-size: 2rem; font-family: 'Cinzel'; color: var(--accent-gold); border: none; border-bottom: 2px dashed var(--accent-gold); background: transparent; padding: 0 0 10px 0;" placeholder="Título del Grimorio" onchange="actualizarProyectoNube()">
+                        
+                        <select id="mesa-input-estado" class="input-herreria" style="font-weight: bold; color: var(--accent-fire);" onchange="actualizarProyectoNube()">
+                            <option value="Borrador">📝 Borrador / Forjándose</option>
+                            <option value="Publicándose">🚀 Publicándose (Activo)</option>
+                            <option value="Pausada">⏸️ En Pausa</option>
+                            <option value="Terminada">✅ Terminada</option>
+                            <option value="Abandonada">💀 Abandonada</option>
+                        </select>
+
                         <label style="color: var(--text-sub); font-size: 0.8rem;">Lore (Sinopsis):</label>
                         <textarea id="mesa-input-sinopsis" class="input-herreria" rows="4" placeholder="Escribe la sinopsis..." onchange="actualizarProyectoNube()" style="resize: none;"></textarea>
                         
@@ -222,7 +242,7 @@
                     </div>
                 </div>
                 
-                <div class="yunque-editor">
+                <div style="background: #0f1015; border: 1px solid var(--border-panel); padding: 30px; height: 65vh; border-left: 3px solid var(--accent-fire); box-shadow: inset 0 0 50px rgba(0,0,0,0.8); display: flex; flex-direction: column;">
                     <input type="text" id="yunque-titulo-capitulo" style="background: transparent; border: none; border-bottom: 2px solid var(--border-panel); color: var(--accent-gold); font-family: 'Cinzel', serif; font-size: 1.5rem; outline: none; margin-bottom: 20px; padding-bottom: 10px;" onchange="guardarCapituloNube()">
                     <textarea id="yunque-texto" style="flex-grow: 1; background: transparent; color: var(--text-main); border: none; outline: none; font-family: 'Raleway', serif; font-size: 1.1rem; line-height: 1.8; resize: none;" placeholder="Escribe aquí..." onchange="guardarCapituloNube()"></textarea>
                 </div>
@@ -233,7 +253,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN DE FIREBASE (TU NUBE)
+        // FIREBASE SETUP
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBJVIlqlaDPcIld5-Zdf1J8rusx3rp_nZc",
@@ -247,26 +267,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Variables de Estado Local
         let usuarioActivo = null;
-        let bibliotecaGlobal = {}; // Objeto que se llena desde la nube
-        let usuariosDB = {};
-        
+        let bibliotecaGlobal = {}; 
         let proyectoActivoId = null;
         let capituloActivoIdx = null;
 
-        // ==========================================
-        // INICIALIZACIÓN Y LOGIN
-        // ==========================================
-        
-        // Función de seguridad: Si la DB está en blanco, crea el Admin.
-        db.ref('yggdrasil/usuarios').once('value').then(snap => {
-            if (!snap.exists()) {
-                db.ref('yggdrasil/usuarios/admin').set({ p: "1234", rol: "escritor", isAdmin: true, inventario: ["semilla"] });
-                db.ref('yggdrasil/usuarios/Panchito').set({ p: "tlaxcala", rol: "escritor", isAdmin: false, inventario: ["semilla"] });
-            }
-        });
+        let vistaAnteriorLector = 'archivo'; // Para saber a dónde volver desde el lector
 
+        // ==========================================
+        // LOGIN Y NAVEGACIÓN (Corregida)
+        // ==========================================
         function intentarLogin() {
             const u = document.getElementById('user-input').value;
             const p = document.getElementById('pass-input').value;
@@ -275,7 +285,7 @@
                 const userData = snapshot.val();
                 if (userData && userData.p === p) {
                     usuarioActivo = { id: u, ...userData };
-                    if(!usuarioActivo.inventario) usuarioActivo.inventario = []; // Asegurar array
+                    if(!usuarioActivo.inventario) usuarioActivo.inventario = []; 
                     
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('top-nav').classList.remove('hidden');
@@ -289,18 +299,16 @@
                     if(usuarioActivo.rol === "escritor") document.getElementById('nav-herreria').classList.remove('hidden');
 
                     arrancarSincronizacionNube();
+                    cambiarVista('home');
                 } else {
                     document.getElementById('login-error').classList.remove('hidden');
                 }
             });
         }
 
-        // ==========================================
-        // NAVEGACIÓN CORREGIDA (Libre de Bugs)
-        // ==========================================
         function cambiarVista(vista, boton) {
-            // Cierra TODO hijo de main-content (El fix definitivo)
-            document.querySelectorAll('#main-content > div').forEach(div => div.classList.add('hidden'));
+            // Cierra todas las vistas hijas directas de main-content
+            document.querySelectorAll('#main-content > div.view-container').forEach(div => div.classList.add('hidden'));
             document.getElementById('vista-' + vista).classList.remove('hidden');
 
             if(boton) {
@@ -308,43 +316,89 @@
                 boton.classList.add('activo');
             }
 
+            // Renderizados dinámicos
             if(vista === 'herreria') renderizarArmeria();
             if(vista === 'archivo') renderizarArchivoCinematico();
             if(vista === 'home') renderizarInventarioPersonal();
         }
 
         // ==========================================
-        // SINCRONIZACIÓN EN TIEMPO REAL (MAGIA FIREBASE)
+        // SINCRONIZACIÓN FIREBASE
         // ==========================================
         function arrancarSincronizacionNube() {
-            // 1. Escuchar la Biblioteca Global (Libros)
             db.ref('yggdrasil/libros').on('value', snapshot => {
                 bibliotecaGlobal = snapshot.val() || {};
-                renderizarArchivoCinematico();
-                renderizarInventarioPersonal();
-                if(!document.getElementById('vista-herreria').classList.contains('hidden') && document.getElementById('herreria-mesa').classList.contains('hidden')) {
-                    renderizarArmeria();
-                }
+                
+                // Actualizar vistas si están abiertas
+                if(!document.getElementById('vista-archivo').classList.contains('hidden')) renderizarArchivoCinematico();
+                if(!document.getElementById('vista-home').classList.contains('hidden')) renderizarInventarioPersonal();
+                if(!document.getElementById('vista-herreria').classList.contains('hidden') && document.getElementById('herreria-mesa').classList.contains('hidden')) renderizarArmeria();
             });
 
-            // 2. Escuchar la Taberna (Chat)
             db.ref('yggdrasil/chat').on('child_added', snapshot => {
                 const msg = snapshot.val();
                 const chatBox = document.getElementById('chat-messages');
-                const esMio = msg.autor === usuarioActivo.id ? 'me' : '';
-                
-                chatBox.innerHTML += `
-                    <div class="chat-msg ${esMio}">
-                        <div class="autor">${msg.autor}</div>
-                        <div class="texto">${msg.texto}</div>
-                    </div>
-                `;
+                const html = `<div style="margin-bottom:10px; color:var(--text-sub);"><strong style="color:var(--accent-gold);">${msg.autor}:</strong> <span style="color:white;">${msg.texto}</span></div>`;
+                chatBox.innerHTML += html;
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
 
         // ==========================================
-        // RENDERIZADO GLOBAL E INVENTARIO
+        // EL LECTOR DE GRIMORIOS (Leer Novelas)
+        // ==========================================
+        function abrirLector(idLibro, origen) {
+            vistaAnteriorLector = origen; // 'home' o 'archivo'
+            const libro = bibliotecaGlobal[idLibro];
+            if(!libro) return;
+
+            document.getElementById('lector-titulo').innerText = libro.titulo;
+            
+            // Generar Índice
+            const listaDiv = document.getElementById('lector-lista-capitulos');
+            listaDiv.innerHTML = '';
+            
+            const caps = libro.capitulos || [];
+            if(caps.length === 0) {
+                listaDiv.innerHTML = `<p style="color:var(--text-sub);">El autor aún no ha forjado páginas.</p>`;
+                document.getElementById('lector-contenido-texto').innerHTML = `<h2 style="color:var(--text-sub); text-align:center; margin-top:50px;">Las páginas están en blanco...</h2>`;
+            } else {
+                caps.forEach((cap, idx) => {
+                    listaDiv.innerHTML += `<button class="lector-cap-btn" onclick="cargarCapituloLector('${idLibro}', ${idx}, this)">${cap.titulo}</button>`;
+                });
+                // Cargar primer capítulo por defecto
+                cargarCapituloLector(idLibro, 0, null);
+            }
+
+            cambiarVista('lector');
+        }
+
+        function cargarCapituloLector(idLibro, idx, btnElement) {
+            const libro = bibliotecaGlobal[idLibro];
+            const cap = libro.capitulos[idx];
+            
+            // Estilos del índice
+            document.querySelectorAll('.lector-cap-btn').forEach(b => b.classList.remove('activo'));
+            if(btnElement) btnElement.classList.add('activo');
+            else document.querySelector('.lector-cap-btn').classList.add('activo');
+
+            // Renderizar texto (con saltos de línea)
+            const contenidoDiv = document.getElementById('lector-contenido-texto');
+            let htmlTexto = cap.texto ? cap.texto.replace(/\n/g, '<br><br>') : "El texto está ilegible...";
+            
+            contenidoDiv.innerHTML = `
+                <h2 style="font-family: 'Cinzel'; color: var(--accent-gold); border-bottom: 1px dashed var(--border-panel); padding-bottom: 10px;">${cap.titulo}</h2>
+                <p>${htmlTexto}</p>
+            `;
+            contenidoDiv.scrollTop = 0;
+        }
+
+        function cerrarLector() {
+            cambiarVista(vistaAnteriorLector);
+        }
+
+        // ==========================================
+        // VISTAS: ARCHIVO E INVENTARIO
         // ==========================================
         function renderizarArchivoCinematico() {
             const container = document.getElementById('contenedor-archivo-global');
@@ -352,20 +406,26 @@
 
             Object.keys(bibliotecaGlobal).forEach(idLibro => {
                 const libro = bibliotecaGlobal[idLibro];
+                const estado = libro.estado || "Publicándose";
+                
+                // Botones del Archivo
                 const yaLoTengo = usuarioActivo.inventario.includes(idLibro);
-                const btnAction = yaLoTengo 
-                    ? `<button class="btn-action btn-secondary" disabled>Equipado en Inventario</button>`
-                    : `<button class="btn-action" onclick="agregarInventarioNube('${idLibro}')">▶ Añadir a la Bolsa</button>`;
+                const btnInventario = yaLoTengo 
+                    ? `<button class="btn-action btn-secondary" disabled>En Tu Bolsa</button>`
+                    : `<button class="btn-action" onclick="agregarInventarioNube('${idLibro}')">+ Añadir a la Bolsa</button>`;
+                
+                const btnLeer = `<button class="btn-action" style="background:var(--bg-panel); color:white; border:1px solid var(--border-panel);" onclick="abrirLector('${idLibro}', 'archivo')">📖 Leer Grimorio</button>`;
 
                 container.innerHTML += `
                     <div class="cinematic-banner" style="background-image: url('${libro.img}');">
                         <div class="banner-content">
-                            <span class="banner-meta">Libro de Yggdrasil</span>
-                            <h1 class="banner-title" style="color:var(--text-main);">${libro.titulo}</h1>
-                            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; text-shadow: 1px 1px 3px #000; color: var(--text-main);">${libro.sinopsis}</p>
-                            <div style="display: flex; gap: 15px; align-items: center;">
-                                ${btnAction}
-                                <span style="font-size: 0.8rem; color: var(--text-sub);">Forjado por @${libro.autor}</span>
+                            <span class="banner-meta">Estado: ${estado}</span>
+                            <h1 class="banner-title" style="color:white;">${libro.titulo}</h1>
+                            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; text-shadow: 1px 1px 3px #000; color: white;">${libro.sinopsis}</p>
+                            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                ${btnLeer}
+                                ${btnInventario}
+                                <span style="font-size: 0.8rem; color: var(--text-sub); margin-left: 10px;">Forjado por @${libro.autor}</span>
                             </div>
                         </div>
                     </div>
@@ -381,42 +441,42 @@
 
             usuarioActivo.inventario.forEach(idLibro => {
                 const libro = bibliotecaGlobal[idLibro];
-                if(libro) {
-                    grid.innerHTML += `<div class="inv-card" style="background-image: url('${libro.img}');"><h3 class="inv-title epic-font">${libro.titulo}</h3></div>`;
-                }
+                if(!libro) return; // Si el autor lo borró, ignorarlo aquí
+
+                grid.innerHTML += `
+                    <div class="inv-card">
+                        <div class="inv-cover" style="background-image: url('${libro.img}');" onclick="abrirLector('${idLibro}', 'home')">
+                            <span class="inv-badge">${libro.estado || 'Publicándose'}</span>
+                            <h3 style="position:absolute; bottom:10px; left:15px; color:white; font-family:'Cinzel'; text-shadow:2px 2px 4px black; margin:0;">${libro.titulo}</h3>
+                        </div>
+                        <div class="inv-info">
+                            <button class="btn-action" style="padding:8px; font-size:0.8rem;" onclick="abrirLector('${idLibro}', 'home')">📖 Leer</button>
+                            <button class="btn-action btn-danger" style="padding:8px; font-size:0.8rem;" onclick="quitarInventarioNube('${idLibro}')">X Desechar</button>
+                        </div>
+                    </div>
+                `;
             });
         }
 
         function agregarInventarioNube(idLibro) {
             if(!usuarioActivo.inventario) usuarioActivo.inventario = [];
             usuarioActivo.inventario.push(idLibro);
-            
-            // Guardar en la nube el nuevo array del usuario
-            db.ref('yggdrasil/usuarios/' + usuarioActivo.id + '/inventario').set(usuarioActivo.inventario)
-              .then(() => alert("✨ Libro guardado en tu inventario de la nube."));
+            db.ref('yggdrasil/usuarios/' + usuarioActivo.id + '/inventario').set(usuarioActivo.inventario);
+            alert("✨ Libro añadido a tu bolsa.");
         }
 
-        // ==========================================
-        // LA TABERNA (ENVIAR CHAT)
-        // ==========================================
-        function enviarMensajeChat() {
-            const input = document.getElementById('chat-input');
-            const texto = input.value.trim();
-            if(texto !== "") {
-                db.ref('yggdrasil/chat').push({
-                    autor: usuarioActivo.id,
-                    texto: texto,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-                input.value = "";
+        function quitarInventarioNube(idLibro) {
+            if(confirm("¿Seguro que deseas sacar este grimorio de tu inventario?")) {
+                usuarioActivo.inventario = usuarioActivo.inventario.filter(id => id !== idLibro);
+                db.ref('yggdrasil/usuarios/' + usuarioActivo.id + '/inventario').set(usuarioActivo.inventario);
+                renderizarInventarioPersonal(); // Refrescar visualmente
             }
         }
 
         // ==========================================
-        // LA HERRERÍA EN LA NUBE
+        // LA HERRERÍA (Gestión y Borrado para Escritores)
         // ==========================================
         function getMisObras() {
-            // Filtra de la biblioteca global solo los libros que yo escribí
             const misObras = [];
             Object.keys(bibliotecaGlobal).forEach(id => {
                 if(bibliotecaGlobal[id].autor === usuarioActivo.id) misObras.push(bibliotecaGlobal[id]);
@@ -431,14 +491,18 @@
 
             const grid = document.getElementById('grid-mis-proyectos');
             grid.innerHTML = '';
-            const misObras = getMisObras();
-
-            misObras.forEach(obra => {
+            
+            getMisObras().forEach(obra => {
                 const numCaps = obra.capitulos ? obra.capitulos.length : 0;
                 grid.innerHTML += `
-                    <div class="inv-card" style="background-image: url('${obra.img}'); border-color: var(--accent-fire);" onclick="abrirProyectoNube('${obra.id}')">
-                        <h3 class="inv-title epic-font" style="color: var(--accent-main);">${obra.titulo}</h3>
-                        <p style="position: relative; z-index: 2; margin: 0; font-size: 0.8rem; color: var(--accent-gold);">${numCaps} Capítulos</p>
+                    <div class="inv-card" style="border-color: var(--accent-fire); cursor:pointer;" onclick="abrirProyectoNube('${obra.id}')">
+                        <div class="inv-cover" style="background-image: url('${obra.img}');">
+                            <span class="inv-badge" style="border-color:var(--accent-fire); color:var(--accent-fire);">${obra.estado || 'Borrador'}</span>
+                        </div>
+                        <div class="inv-info" style="align-items:center; justify-content:center;">
+                            <h3 class="epic-font" style="margin:0; color:var(--accent-gold); text-align:center;">${obra.titulo}</h3>
+                            <p style="margin:0; font-size:0.8rem; color:var(--text-sub);">${numCaps} Capítulos</p>
+                        </div>
                     </div>
                 `;
             });
@@ -446,15 +510,10 @@
 
         function forjarNuevoMundo() {
             const nuevoId = 'libro_' + Date.now();
-            const nuevaObra = {
-                id: nuevoId,
-                titulo: "Grimorio Sin Título",
-                img: "https://via.placeholder.com/300x450/16181d/d4af37?text=Nueva+Forja",
-                sinopsis: "Historia en construcción...",
-                autor: usuarioActivo.id,
-                capitulos: []
-            };
-            db.ref('yggdrasil/libros/' + nuevoId).set(nuevaObra); // Dispara la actualización global
+            db.ref('yggdrasil/libros/' + nuevoId).set({
+                id: nuevoId, titulo: "Grimorio Sin Título", estado: "Borrador", img: "https://via.placeholder.com/300x450/16181d/d4af37?text=Nueva+Forja",
+                sinopsis: "Historia en construcción...", autor: usuarioActivo.id, capitulos: []
+            });
         }
 
         function abrirProyectoNube(idLibro) {
@@ -468,6 +527,10 @@
             document.getElementById('mesa-input-sinopsis').value = obra.sinopsis;
             document.getElementById('mesa-input-img').value = obra.img;
             document.getElementById('mesa-portada-preview').style.backgroundImage = `url('${obra.img}')`;
+            
+            // Cargar estado en el selector
+            document.getElementById('mesa-estado-badge').innerText = obra.estado || 'Borrador';
+            document.getElementById('mesa-input-estado').value = obra.estado || 'Borrador';
 
             renderizarListaCapitulosNube();
         }
@@ -475,11 +538,22 @@
         function actualizarProyectoNube() {
             const updates = {
                 titulo: document.getElementById('mesa-input-titulo').value,
+                estado: document.getElementById('mesa-input-estado').value,
                 sinopsis: document.getElementById('mesa-input-sinopsis').value,
                 img: document.getElementById('mesa-input-img').value
             };
             document.getElementById('mesa-portada-preview').style.backgroundImage = `url('${updates.img}')`;
+            document.getElementById('mesa-estado-badge').innerText = updates.estado;
+            
             db.ref('yggdrasil/libros/' + proyectoActivoId).update(updates);
+        }
+
+        function destruirMundoNube() {
+            if(confirm("🔥 ADVERTENCIA MÁXIMA 🔥\n¿Estás seguro de que deseas incinerar este grimorio por completo? Esta acción NO se puede deshacer y borrará la historia para ti y para todos los aventureros.")) {
+                db.ref('yggdrasil/libros/' + proyectoActivoId).remove().then(() => {
+                    volverArmeria();
+                });
+            }
         }
 
         function volverArmeria() {
@@ -487,21 +561,25 @@
             renderizarArmeria();
         }
 
+        // Gestión de Capítulos y Borrado
         function renderizarListaCapitulosNube() {
             const lista = document.getElementById('mesa-lista-capitulos');
             lista.innerHTML = '';
             const capitulos = bibliotecaGlobal[proyectoActivoId].capitulos || [];
 
             if(capitulos.length === 0) {
-                lista.innerHTML = `<p style="color: var(--text-sub); font-size: 0.9rem;">Aún no has forjado capítulos.</p>`;
+                lista.innerHTML = `<p style="color: var(--text-sub); font-size: 0.9rem;">No hay capítulos forjados.</p>`;
                 return;
             }
 
             capitulos.forEach((cap, idx) => {
                 lista.innerHTML += `
-                    <div class="capitulo-item" onclick="abrirEditorCapituloNube(${idx})">
-                        <span style="font-family: 'Cinzel', serif; color: var(--text-main); font-weight: bold;">${cap.titulo}</span>
-                        <span style="color: var(--accent-fire); font-size: 0.8rem;">Modificar ⚒️</span>
+                    <div class="capitulo-item">
+                        <span style="font-family: 'Cinzel', serif; color: var(--text-main); font-weight: bold; cursor:pointer; flex-grow:1;" onclick="abrirEditorCapituloNube(${idx})">${cap.titulo}</span>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-action" style="padding:5px 10px; font-size:0.7rem;" onclick="abrirEditorCapituloNube(${idx})">Modificar ⚒️</button>
+                            <button class="btn-action btn-danger" style="padding:5px 10px; font-size:0.7rem;" onclick="borrarCapituloNube(${idx})">Borrar X</button>
+                        </div>
                     </div>
                 `;
             });
@@ -509,30 +587,31 @@
 
         function crearNuevoCapituloNube() {
             const capitulos = bibliotecaGlobal[proyectoActivoId].capitulos || [];
-            const num = capitulos.length + 1;
-            capitulos.push({ titulo: "Capítulo " + num, texto: "" });
+            capitulos.push({ titulo: "Capítulo " + (capitulos.length + 1), texto: "" });
             db.ref('yggdrasil/libros/' + proyectoActivoId + '/capitulos').set(capitulos);
-            renderizarListaCapitulosNube();
+        }
+
+        function borrarCapituloNube(idx) {
+            if(confirm("¿Seguro que deseas destruir este capítulo?")) {
+                let capitulos = bibliotecaGlobal[proyectoActivoId].capitulos || [];
+                capitulos.splice(idx, 1);
+                db.ref('yggdrasil/libros/' + proyectoActivoId + '/capitulos').set(capitulos);
+            }
         }
 
         function abrirEditorCapituloNube(index) {
             capituloActivoIdx = index;
             const cap = bibliotecaGlobal[proyectoActivoId].capitulos[index];
-            
             document.getElementById('herreria-mesa').classList.add('hidden');
             document.getElementById('herreria-yunque').classList.remove('hidden');
-
             document.getElementById('yunque-titulo-capitulo').value = cap.titulo;
             document.getElementById('yunque-texto').value = cap.texto;
         }
 
         function guardarCapituloNube() {
-            const titulo = document.getElementById('yunque-titulo-capitulo').value;
-            const texto = document.getElementById('yunque-texto').value;
-            
             db.ref(`yggdrasil/libros/${proyectoActivoId}/capitulos/${capituloActivoIdx}`).update({
-                titulo: titulo,
-                texto: texto
+                titulo: document.getElementById('yunque-titulo-capitulo').value,
+                texto: document.getElementById('yunque-texto').value
             });
         }
 
@@ -540,7 +619,7 @@
             guardarCapituloNube();
             capituloActivoIdx = null;
             document.getElementById('herreria-yunque').classList.add('hidden');
-            abrirProyectoNube(proyectoActivoId);
+            document.getElementById('herreria-mesa').classList.remove('hidden');
         }
 
         function leerWord(event) {
@@ -552,37 +631,23 @@
                     .then(result => { 
                         document.getElementById('yunque-texto').value = result.value; 
                         guardarCapituloNube();
-                        alert("✨ Pergamino transmutado exitosamente en el Yunque."); 
-                    }).catch(err => alert("❌ Error al transmutar. Asegúrate de que sea .docx"));
+                        alert("✨ Pergamino transmutado exitosamente."); 
+                    }).catch(err => alert("❌ Error. Asegúrate de que sea .docx"));
             };
             reader.readAsArrayBuffer(file);
         }
 
         // ==========================================
-        // ADMIN (Gestión de Usuarios en Nube)
+        // TABERNA LÓGICA
         // ==========================================
-        function renderizarListaUsuarios() {
-            db.ref('yggdrasil/usuarios').once('value').then(snap => {
-                const users = snap.val();
-                const lista = document.getElementById('lista-usuarios');
-                lista.innerHTML = Object.keys(users).map(u => `
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-panel); padding: 5px 0; font-size: 0.85rem; color: white;">
-                        <span>${u} (${users[u].rol})</span>
-                        ${!users[u].isAdmin ? `<button onclick="borrarUser('${u}')" style="background:none; border:none; color:var(--accent-fire); cursor:pointer;">X</button>` : ''}
-                    </div>
-                `).join('');
-            });
-        }
-        function crearUsuario() {
-            const u = document.getElementById('new-u').value; const p = document.getElementById('new-p').value; const rol = document.getElementById('new-rol').value;
-            if(u && p) { 
-                db.ref('yggdrasil/usuarios/' + u).set({ p: p, rol: rol, isAdmin: false, inventario: ["semilla"] })
-                  .then(() => { renderizarListaUsuarios(); alert("Aventurero registrado en la nube."); });
+        function enviarMensajeChat() {
+            const input = document.getElementById('chat-input');
+            const texto = input.value.trim();
+            if(texto !== "") {
+                db.ref('yggdrasil/chat').push({ autor: usuarioActivo.id, texto: texto, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                input.value = "";
             }
         }
-        function borrarUser(u) { db.ref('yggdrasil/usuarios/' + u).remove().then(() => renderizarListaUsuarios()); }
-
     </script>
 </body>
 </html>
-
