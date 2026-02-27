@@ -1,418 +1,560 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivo de Mundos | Studio de Autor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    
+    <title>Yggdrasil | Red de Autores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Raleway:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
 
     <style>
-        /* PALETA DE COLORES (Agencia / Ejecutivo) */
+        /* =========================================
+           PALETA RPG (Oro, Fuego y Obsidiana)
+           ========================================= */
         :root {
-            --bg-main: #fdfaf1; --bg-panel: #ffffff; --border: #f9b17a;  
-            --input-bg: #e8ebf0; --text-main: #2d3250; --text-sub: #707793;     
-            --accent: #f9b17a; --text-btn: #2d3250; --shadow: rgba(249, 177, 122, 0.15); 
+            --bg-void: #0a0a0c; --bg-panel: #16181d; --border-panel: #2a2d36;   
+            --accent-gold: #d4af37; --accent-fire: #e25822;    
+            --text-main: #e0e2e5; --text-sub: #8a8d98;       
         }
 
-        body.dark-mode {
-            --bg-main: #1a1d2e; --bg-panel: #2d3250; --border: #424769;  
-            --input-bg: #424769; --text-main: #ffffff; --text-sub: #c0c5d1;     
-            --accent: #f9b17a; --text-btn: #2d3250; --shadow: rgba(0, 0, 0, 0.4); 
-        }
-
-        body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Raleway', sans-serif; margin: 0; transition: all 0.4s ease; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg-void); color: var(--text-main); font-family: 'Raleway', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; background-image: radial-gradient(circle at 50% -20%, #2a2015 0%, var(--bg-void) 60%); }
+        h1, h2, h3, h4, .epic-font { font-family: 'Cinzel', serif; text-transform: uppercase; }
         .hidden { display: none !important; }
 
-        /* PANTALLA DE ACCESO */
-        #login-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
-        .login-card { background-color: var(--bg-panel); border: 2px solid var(--border); border-radius: 15px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px var(--shadow); width: 100%; max-width: 400px; }
-        .login-input { width: 100%; padding: 15px; margin-bottom: 15px; background-color: var(--input-bg); border: none; border-radius: 8px; color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 15px; background-color: var(--accent); color: var(--text-btn); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        /* =========================================
+           CORTAFUEGOS (LOGIN)
+           ========================================= */
+        #login-section { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-void); background-image: linear-gradient(rgba(10,10,12,0.8), rgba(10,10,12,0.95)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .login-card { background: rgba(22, 24, 29, 0.9); border: 1px solid var(--accent-gold); border-radius: 4px; padding: 40px; text-align: center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); width: 100%; max-width: 350px; backdrop-filter: blur(10px); border-left: 5px solid var(--accent-gold); }
+        .login-input { width: 100%; padding: 15px; margin-bottom: 20px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-panel); border-radius: 2px; color: white; font-size: 1rem; box-sizing: border-box; text-align: center; font-family: 'Raleway', sans-serif; outline: none; transition: 0.3s; }
+        .login-input:focus { border-color: var(--accent-gold); box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2); }
 
-        /* INTERFAZ PRINCIPAL */
-        #app-section { display: flex; height: 100vh; width: 100%; }
-        #sidebar { width: 280px; background-color: var(--bg-panel); border-right: 2px solid var(--border); display: flex; flex-direction: column; padding-top: 20px; overflow-y: auto; }
-        .btn-nav { background: transparent; color: var(--text-sub); border: none; padding: 15px 20px; text-align: left; font-size: 1.1rem; cursor: pointer; border-bottom: 1px solid var(--border); font-weight: 600; width: 100%; transition: 0.3s; }
-        .btn-nav:hover, .btn-nav.activo { background-color: var(--accent); color: var(--text-btn); }
-        #contenido-principal { flex-grow: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-main); }
+        /* BOTONES GLOBALES */
+        button.btn-action { background: var(--accent-fire); color: white; border: none; padding: 12px 25px; border-radius: 2px; cursor: pointer; font-family: 'Raleway', sans-serif; font-weight: 800; text-transform: uppercase; transition: 0.3s; letter-spacing: 1px; }
+        button.btn-action:hover { filter: brightness(1.2); box-shadow: 0 0 15px rgba(226, 88, 34, 0.4); }
+        button.btn-secondary { background: transparent; border: 1px solid var(--text-sub); color: var(--text-sub); }
+        button.btn-secondary:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
 
-        /* GRID DE LIBROS Y CAPÍTULOS */
-        .grid-tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-top: 20px; }
-        .tarjeta-libro { background: var(--bg-panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 4px 10px var(--shadow); cursor: pointer; transition: transform 0.3s; position: relative; }
-        .tarjeta-libro:hover { transform: translateY(-5px); }
-        .badge-estado { position: absolute; top: -12px; right: 10px; background: var(--text-main); color: var(--bg-main); padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+        /* =========================================
+           TOP NAV
+           ========================================= */
+        #top-nav { background: rgba(22, 24, 29, 0.95); border-bottom: 1px solid var(--border-panel); display: flex; justify-content: space-between; align-items: center; padding: 0 40px; height: 70px; backdrop-filter: blur(10px); z-index: 100; flex-shrink: 0;}
+        .nav-logo { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 900; color: var(--accent-gold); letter-spacing: 3px; }
+        .nav-links { display: flex; gap: 30px; height: 100%; }
+        .btn-nav { background: transparent; color: var(--text-sub); border: none; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; position: relative; height: 100%; transition: 0.3s; font-family: 'Raleway', sans-serif; }
+        .btn-nav:hover, .btn-nav.activo { color: var(--text-main); }
+        .btn-nav.activo::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-gold); box-shadow: 0 -2px 10px var(--accent-gold); }
+        .user-controls { display: flex; align-items: center; gap: 20px; }
+
+        /* =========================================
+           ÁREA PRINCIPAL Y VISTAS
+           ========================================= */
+        #main-content { flex-grow: 1; overflow-y: auto; position: relative; }
+        .view-container { padding: 40px; max-width: 1400px; margin: 0 auto; height: 100%; box-sizing: border-box; }
+
+        /* HOME / INVENTARIO */
+        .home-layout { display: flex; gap: 40px; height: 100%; }
+        .home-sidebar { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
+        .home-inventory { flex-grow: 1; display: flex; flex-direction: column; }
+        .panel { background: var(--bg-panel); border: 1px solid var(--border-panel); padding: 25px; border-left: 3px solid var(--accent-gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .avatar-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--accent-gold); margin: 0 auto 15px auto; background-image: url('https://images.unsplash.com/photo-1535295972055-1c762f4483e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'); background-size: cover; background-position: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+        .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; overflow-y: auto; padding-right: 10px; }
+        .inv-card { background: #111; border: 1px solid var(--border-panel); aspect-ratio: 2/3; position: relative; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; text-align: center; background-size: cover; background-position: center; border-radius: 2px; }
+        .inv-card:hover { transform: translateY(-5px); border-color: var(--accent-gold); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .inv-card::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%); }
+        .inv-title { position: relative; z-index: 2; font-size: 1rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px #000; color: var(--accent-gold); }
+
+        /* EL GRAN ARCHIVO */
+        .archivo-container { display: flex; flex-direction: column; gap: 40px; padding: 0 0 40px 0; max-width: 100%; }
+        .cinematic-banner { width: 100%; height: 60vh; min-height: 400px; position: relative; display: flex; align-items: center; padding: 0 10%; box-sizing: border-box; background-size: cover; background-position: center; border-bottom: 2px solid var(--accent-gold); }
+        .cinematic-banner::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to right, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.4) 50%, rgba(10,10,12,0.8) 100%); }
+        .banner-content { position: relative; z-index: 2; max-width: 600px; }
+        .banner-title { font-family: 'Cinzel', serif; font-size: 4.5rem; font-weight: 900; line-height: 1; margin: 0 0 10px 0; text-transform: uppercase; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+        .banner-title span { color: var(--accent-gold); }
+        .banner-meta { display: inline-block; background: var(--accent-gold); color: #000; font-weight: 800; font-size: 0.8rem; padding: 4px 10px; margin-bottom: 20px; letter-spacing: 1px; }
+
+        /* LA TABERNA */
+        .chat-container { background: var(--bg-panel); border: 1px solid var(--border-panel); height: 70vh; display: flex; flex-direction: column; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
         
-        /* EDITOR Y PANELES */
-        .panel-modulo { background: var(--bg-panel); padding: 25px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 4px 10px var(--shadow); }
-        textarea { width: 100%; background: var(--input-bg); color: var(--text-main); border: none; border-radius: 8px; padding: 20px; font-size: 1.1rem; resize: vertical; min-height: 400px; box-sizing: border-box; font-family: 'Raleway', sans-serif; line-height: 1.6; }
-        .input-titulo { width: 100%; background: transparent; border: none; border-bottom: 2px dashed var(--text-sub); color: var(--text-main); font-size: 2rem; font-weight: bold; margin-bottom: 20px; padding-bottom: 10px; font-family: 'Raleway', sans-serif; }
-        .input-titulo:focus { outline: none; border-color: var(--accent); }
+        /* LA HERRERÍA */
+        .herreria-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 1px solid var(--border-panel); padding-bottom: 20px; }
+        .forge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         
-        /* SELECTORES */
-        .select-estado { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border); padding: 8px; border-radius: 5px; font-weight: bold; font-family: 'Raleway', sans-serif; outline: none; }
-        .theme-switch-wrapper { position: absolute; top: 20px; right: 20px; }
-        .theme-select { padding: 8px; border-radius: 20px; border: 2px solid var(--accent); background: var(--bg-panel); color: var(--text-main); cursor: pointer; outline: none; }
+        .mesa-diseno { display: grid; grid-template-columns: 300px 1fr; gap: 40px; background: var(--bg-panel); padding: 30px; border: 1px solid var(--border-panel); border-left: 3px solid var(--accent-fire); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
+        .mesa-portada { width: 100%; aspect-ratio: 2/3; background-size: cover; background-position: center; border: 2px solid var(--border-panel); border-radius: 4px; position: relative; }
+        .input-herreria { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--border-panel); color: white; font-family: 'Raleway'; margin-bottom: 15px; border-radius: 2px; box-sizing: border-box; }
+        .input-herreria:focus { border-color: var(--accent-fire); outline: none; }
+        
+        .capitulo-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
+        .capitulo-item { background: rgba(0,0,0,0.3); border: 1px solid var(--border-panel); padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .capitulo-item:hover { border-color: var(--accent-gold); background: rgba(212, 175, 55, 0.05); }
+
+        .yunque-editor { background: #0f1015; border: 1px solid var(--border-panel); padding: 30px; height: 65vh; border-left: 3px solid var(--accent-fire); box-shadow: inset 0 0 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
+        
+        /* MODAL DE ADMIN */
+        #admin-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-panel); border: 1px solid var(--accent-gold); padding: 30px; z-index: 2000; width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); border-left: 5px solid var(--accent-gold); }
     </style>
 </head>
 <body>
 
-    <div class="theme-switch-wrapper">
-        <select class="theme-select" id="theme-selector" onchange="cambiarTema(this.value)">
-            <option value="light">Modo Claro (Agencia)</option>
-            <option value="dark">Modo Oscuro (Ejecutivo)</option>
-        </select>
-    </div>
-
     <div id="login-section">
         <div class="login-card">
-            <h1>Studio de Autor</h1>
-            <p>Conectado a la Nube</p>
-            <input type="text" id="user-input" class="login-input" placeholder="Usuario">
-            <input type="password" id="pass-input" class="login-input" placeholder="Contraseña">
-            <button class="btn-submit" onclick="intentarLogin()">Acceder a la Biblioteca</button>
-            <p id="loading-msg" class="hidden" style="color:var(--accent); margin-top:15px; font-weight:bold;">Sincronizando datos...</p>
+            <h1 class="epic-font" style="color: var(--accent-gold); font-size: 2.5rem; margin: 0 0 5px 0;">YGGDRASIL</h1>
+            <p style="color: var(--text-sub); margin-bottom: 30px; font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase;">Las Puertas del Reino</p>
+            <input type="text" id="user-input" class="login-input" placeholder="Nombre de Aventurero">
+            <input type="password" id="pass-input" class="login-input" placeholder="Palabra Secreta">
+            <button class="btn-action" style="width: 100%;" onclick="intentarLogin()">Cruzar el Umbral</button>
+            <p id="login-error" class="hidden" style="color: #ff4c4c; font-size: 0.85rem; margin-top: 15px;">Acceso denegado. Verifica tus credenciales.</p>
         </div>
     </div>
 
-    <div id="app-section" class="hidden">
+    <div id="admin-modal" class="hidden">
+        <h2 class="epic-font" style="margin-top: 0; text-align: center; color: var(--accent-gold);">El Concilio</h2>
+        <div id="lista-usuarios" style="max-height: 150px; overflow-y: auto; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid var(--border-panel);"></div>
+        <input type="text" id="new-u" class="login-input" placeholder="Nuevo Usuario" style="padding: 10px; margin-bottom: 10px;">
+        <input type="password" id="new-p" class="login-input" placeholder="Contraseña" style="padding: 10px; margin-bottom: 10px;">
+        <select id="new-rol" class="login-input" style="padding: 10px; margin-bottom: 20px;">
+            <option value="lector">Rol: Lector (Solo explora)</option>
+            <option value="escritor">Rol: Creador (Forja Mundos)</option>
+        </select>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-secondary" style="flex:1;" onclick="document.getElementById('admin-modal').classList.add('hidden')">Cerrar</button>
+            <button class="btn-action" style="flex:1;" onclick="crearUsuario()">Forjar Llave</button>
+        </div>
+    </div>
+
+    <nav id="top-nav" class="hidden">
+        <div class="nav-links">
+            <div class="nav-logo" style="margin-right: 40px;">YGGDRASIL</div>
+            <button class="btn-nav activo" onclick="cambiarVista('home', this)">SANTUARIO</button>
+            <button class="btn-nav" onclick="cambiarVista('archivo', this)">EL GRAN ARCHIVO</button>
+            <button class="btn-nav" onclick="cambiarVista('taberna', this)">LA TABERNA</button>
+            <button id="nav-herreria" class="btn-nav hidden" onclick="cambiarVista('herreria', this)">LA HERRERÍA</button>
+        </div>
+        <div class="user-controls">
+            <span id="user-display-name" style="font-weight: 600; letter-spacing: 1px; color: var(--accent-gold);">User</span>
+            <button id="btn-admin" class="btn-action hidden" style="padding: 8px 15px; font-size: 0.7rem; background: #4a235a; color: white;" onclick="document.getElementById('admin-modal').classList.remove('hidden'); renderizarListaUsuarios();">Gestión de Almas</button>
+            <button class="btn-secondary" style="padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 2px;" onclick="location.reload()">Desconectar</button>
+        </div>
+    </nav>
+
+    <main id="main-content" class="hidden">
         
-        <div id="sidebar">
-            <div style="padding: 20px; text-align: center; border-bottom: 1px solid var(--border);">
-                <h2 style="margin: 0; color: var(--text-main);">Archivo</h2>
-                <span id="sub-sidebar" style="color: var(--accent); font-size: 0.9rem; font-weight: bold;">Lobby Principal</span>
-            </div>
-            
-            <div id="contenido-sidebar">
-                </div>
-            
-            <div style="margin-top: auto; padding: 15px;">
-                <button id="btn-gestion-usuarios" onclick="abrirGestionUsuarios()" class="btn-submit hidden" style="width:100%; font-size: 0.9rem; margin-bottom: 10px;">Gestión de Usuarios</button>
-                <button onclick="location.reload()" class="btn-submit" style="width:100%; font-size: 0.9rem; background: #444; color: white;">Cerrar Sesión</button>
+        <div id="vista-home" class="view-container">
+            <div class="home-layout">
+                <aside class="home-sidebar">
+                    <div class="panel" style="text-align: center;">
+                        <div class="avatar-circle"></div>
+                        <h2 class="epic-font" id="home-username" style="margin: 0; color: var(--accent-gold);">Aventurero</h2>
+                        <p id="home-rol" style="color: var(--text-sub); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px;">Rango</p>
+                        <div style="margin-top: 20px; text-align: left;">
+                            <p style="font-size: 0.8rem; color: var(--text-main); display: flex; justify-content: space-between;"><span>Nivel 2</span><span style="color: var(--accent-gold);">150/200 XP</span></p>
+                            <div style="width: 100%; height: 6px; background: #000; border: 1px solid var(--border-panel);"><div style="width: 75%; height: 100%; background: #4caf50; box-shadow: 0 0 10px #4caf50;"></div></div>
+                        </div>
+                    </div>
+                </aside>
+                <section class="home-inventory">
+                    <h1 class="epic-font" style="margin-top: 0;">Mi Inventario</h1>
+                    <p style="color: var(--text-sub); margin-bottom: 30px;">Tus grimorios equipados y obras guardadas.</p>
+                    <div class="inv-grid" id="grid-inventario-personal"></div>
+                </section>
             </div>
         </div>
-        
-        <div id="contenido-principal">
-            
-            <div id="vista-inicio">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h1 style="margin: 0;">Mis Proyectos Literarios</h1>
-                    <button class="btn-submit" style="width: auto; padding: 10px 20px;" onclick="crearNuevoLibro()">+ Nuevo Libro</button>
-                </div>
-                <div id="grid-libros" class="grid-tarjetas">
+
+        <div id="vista-archivo" class="hidden">
+            <div class="archivo-container" id="contenedor-archivo-global"></div>
+        </div>
+
+        <div id="vista-taberna" class="view-container hidden">
+            <h1 class="epic-font" style="margin-top: 0; color: var(--accent-gold);">La Taberna Global</h1>
+            <div class="chat-container">
+                <div style="flex-grow: 1; padding: 20px; overflow-y: auto;">
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-left: 3px solid var(--accent-gold);">
+                        <span style="color: var(--accent-gold); font-weight: bold; font-size: 0.8rem;">SISTEMA</span>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-sub);">El fuego cruje. Comparte tus historias aquí.</p>
                     </div>
+                </div>
+                <div style="display: flex; gap: 10px; padding: 20px; border-top: 1px solid var(--border-panel); background: rgba(0,0,0,0.5);">
+                    <input type="text" style="flex-grow: 1; padding: 15px; background: #0a0a0c; border: 1px solid var(--border-panel); color: white; outline: none; font-family: 'Raleway';" placeholder="Escribe un mensaje al servidor...">
+                    <button class="btn-action" style="width: auto;">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-herreria" class="view-container hidden">
+            
+            <div id="herreria-armeria">
+                <div class="herreria-header">
+                    <div>
+                        <h1 class="epic-font" style="margin: 0; color: var(--accent-fire);">Taller de Forja</h1>
+                        <p style="color: var(--text-sub); margin: 5px 0 0 0;">Gestiona tus mundos y portadas. Todo lo forjado aquí se enviará a El Gran Archivo.</p>
+                    </div>
+                    <button class="btn-action" onclick="forjarNuevoMundo()">+ Forjar Nuevo Mundo</button>
+                </div>
+                <div class="forge-grid" id="grid-mis-proyectos"></div>
             </div>
 
-            <div id="vista-libro" class="hidden">
-                <div class="panel-modulo" style="position: relative;">
-                    <input type="text" id="input-titulo-libro" class="input-titulo" onchange="guardarCambiosLibro()">
-                    
-                    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-                        <div>
-                            <span style="color: var(--text-sub); font-size: 0.9rem;">Estado:</span>
-                            <select id="select-estado" class="select-estado" onchange="guardarCambiosLibro()">
-                                <option value="Escribiéndose">📝 Escribiéndose</option>
-                                <option value="Publicándose">🚀 Publicándose</option>
-                                <option value="Terminada">✅ Terminada</option>
-                                <option value="Pausada">⏸️ Pausada</option>
-                                <option value="Abandonada">💀 Abandonada</option>
-                            </select>
+            <div id="herreria-mesa" class="hidden">
+                <button class="btn-secondary" style="padding: 8px 15px; margin-bottom: 20px;" onclick="volverArmeria()">← Volver al Taller</button>
+                <div class="mesa-diseno">
+                    <div>
+                        <div id="mesa-portada-preview" class="mesa-portada"></div>
+                        <label style="color: var(--text-sub); font-size: 0.8rem; margin-top: 15px; display: block;">URL de Portada:</label>
+                        <input type="text" id="mesa-input-img" class="input-herreria" placeholder="Pega una URL de imagen..." onchange="actualizarProyecto()">
+                    </div>
+                    <div>
+                        <input type="text" id="mesa-input-titulo" class="input-herreria" style="font-size: 2rem; font-family: 'Cinzel'; color: var(--accent-gold); border: none; border-bottom: 2px dashed var(--accent-gold); background: transparent; padding: 0 0 10px 0;" placeholder="Título del Grimorio" onchange="actualizarProyecto()">
+                        <label style="color: var(--text-sub); font-size: 0.8rem;">Lore (Sinopsis):</label>
+                        <textarea id="mesa-input-sinopsis" class="input-herreria" rows="4" placeholder="Escribe la sinopsis..." onchange="actualizarProyecto()" style="resize: none;"></textarea>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; border-bottom: 1px solid var(--border-panel); padding-bottom: 10px;">
+                            <h3 class="epic-font" style="margin: 0;">Capítulos</h3>
+                            <button class="btn-action" style="padding: 8px 15px; font-size: 0.8rem;" onclick="crearNuevoCapitulo()">+ Añadir Capítulo</button>
                         </div>
-                        <div style="background: var(--input-bg); padding: 8px 15px; border-radius: 5px; font-weight: bold;">
-                            Índice: <span id="contador-capitulos" style="color: var(--accent);">0</span> Capítulos
-                        </div>
-                        <button class="btn-submit" style="width: auto; padding: 8px 15px; margin-left: auto;" onclick="abrirPersonajes()">Fichas de Personajes</button>
+                        <div class="capitulo-list" id="mesa-lista-capitulos"></div>
                     </div>
                 </div>
+            </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-                    <h2 style="margin: 0;">Índice de Capítulos</h2>
-                    <button class="btn-submit" style="width: auto; padding: 8px 15px;" onclick="crearNuevoCapitulo()">+ Agregar Capítulo</button>
+            <div id="herreria-yunque" class="hidden">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <button class="btn-secondary" style="padding: 8px 15px;" onclick="volverMesaDiseno()">← Volver a la Mesa</button>
+                    <div style="background: rgba(226,88,34,0.1); border: 1px dashed var(--accent-fire); padding: 5px 15px; border-radius: 4px; display: flex; align-items: center;">
+                        <span style="color: var(--accent-fire); font-weight: bold; font-size: 0.8rem;">📜 Importar (.docx):</span>
+                        <input type="file" id="upload-word" accept=".docx" onchange="leerWord(event)" style="color: var(--text-sub); font-size: 0.8rem; margin-left: 10px;">
+                    </div>
                 </div>
                 
-                <div id="grid-capitulos" class="grid-tarjetas">
-                    </div>
-            </div>
-
-            <div id="vista-editor" class="hidden">
-                <div class="panel-modulo">
-                    <input type="text" id="input-titulo-editor" class="input-titulo" onchange="guardarEditor()">
-                    
-                    <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
-                        <span style="font-weight: bold; color: var(--accent);">📂 Importar desde Word (.docx):</span>
-                        <input type="file" id="upload-word" accept=".docx" style="color: var(--text-main);" onchange="leerWord(event)">
-                        <span style="font-size: 0.8rem; color: var(--text-sub);">(El texto reemplazará lo que esté escrito abajo)</span>
-                    </div>
-
-                    <textarea id="texto-contenido" onchange="guardarEditor()" placeholder="Comienza a redactar tu historia aquí..."></textarea>
+                <div class="yunque-editor">
+                    <input type="text" id="yunque-titulo-capitulo" style="background: transparent; border: none; border-bottom: 2px solid var(--border-panel); color: var(--accent-gold); font-family: 'Cinzel', serif; font-size: 1.5rem; outline: none; margin-bottom: 20px; padding-bottom: 10px;" onchange="guardarCapitulo()">
+                    <textarea id="yunque-texto" style="flex-grow: 1; background: transparent; color: var(--text-main); border: none; outline: none; font-family: 'Raleway', serif; font-size: 1.1rem; line-height: 1.8; resize: none;" placeholder="El metal está caliente. Escribe aquí..." onchange="guardarCapitulo()"></textarea>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="modal-usuarios" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--bg-panel); padding:30px; border:2px solid var(--accent); z-index:200; width:350px; border-radius:10px; box-shadow: 0 10px 30px var(--shadow);">
-        <h3 style="color:var(--text-main); margin-top:0;">Panel de Administrador</h3>
-        <div id="lista-usuarios" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; color:var(--text-main);"></div>
-        <hr style="border:0.5px solid var(--text-sub); margin-bottom: 15px;">
-        <input type="text" id="new-u" class="login-input" placeholder="Nuevo Usuario" style="padding:10px;">
-        <input type="password" id="new-p" class="login-input" placeholder="Nueva Contraseña" style="padding:10px;">
-        <button class="btn-submit" onclick="crearUsuario()" style="width:100%">Dar de Alta</button>
-        <button class="btn-submit" onclick="document.getElementById('modal-usuarios').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px; color:white;">Cerrar</button>
-    </div>
+        </div>
+
+    </main>
 
     <script>
-        /* --- TEMA --- */
-        function cambiarTema(tema) {
-            if (tema === 'dark') document.body.classList.add('dark-mode');
-            else document.body.classList.remove('dark-mode');
-            localStorage.setItem('temaEscritura', tema);
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            const temaGuardado = localStorage.getItem('temaEscritura') || 'light';
-            document.getElementById('theme-selector').value = temaGuardado;
-            cambiarTema(temaGuardado);
-        });
+        // ==========================================
+        // BASE DE DATOS
+        // ==========================================
+        let usuariosDB = [
+            { u: "admin", p: "1234", rol: "escritor", isAdmin: true },
+            { u: "Panchito", p: "tlaxcala", rol: "escritor", isAdmin: false },
+            { u: "LectorX", p: "0000", rol: "lector", isAdmin: false }
+        ];
 
-        /* --- FIREBASE --- */
-        const firebaseConfig = {
-            apiKey: "AIzaSyBJVIlqlaDPcIld5-Zdf1J8rusx3rp_nZc",
-            authDomain: "miarchivopersonal-dc922.firebaseapp.com",
-            databaseURL: "https://miarchivopersonal-dc922-default-rtdb.firebaseio.com",
-            projectId: "miarchivopersonal-dc922",
-            storageBucket: "miarchivopersonal-dc922.firebasestorage.app",
-            messagingSenderId: "90845882531",
-            appId: "1:90845882531:web:a91b141d9233107ccff716"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        let usuarioActivo = null;
+        let miInventario = [102]; 
 
-        let dbLocal = null;
-        let lIdx = null; // Índice del Libro
-        let cIdx = null; // Índice del Capítulo
-        let esPersonajes = false; // Bandera para saber si editamos personajes
+        // Biblioteca Pública (El Gran Archivo)
+        let bibliotecaGlobal = [
+            {
+                id: 101, titulo: "ONE LAST <br><span>FLIGHT</span>", tituloPlano: "One Last Flight", autor: "Monmonde", fecha: "2119 | Apocalypse Day", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80", desc: "Un escape desesperado de un mundo que se desmorona bajo nosotros.", capitulos: 1
+            },
+            {
+                // Este ID coincide con la obra forjada de Panchito abajo
+                id: 102, titulo: "EL POLEN DE LA <br><span>RAÍZ</span>", tituloPlano: "El Polen de la Raíz", autor: "Panchito", fecha: "Año Cero | Tlaxcala", img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=1920&q=80", desc: "Una raíz mágica consumió los continentes. El polen tóxico flota en el aire. La supervivencia es el único objetivo.", capitulos: 1
+            }
+        ];
 
-        /* --- LOGIN --- */
+        // Obras Forjadas (La Herrería Privada)
+        let misObrasForjadas = [
+            {
+                id: 102, // Mismo ID para conectarlo a la biblioteca global
+                titulo: "El Polen de la Raíz",
+                img: "https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=600&q=80",
+                sinopsis: "Una raíz mágica consumió los continentes. El polen tóxico flota en el aire. La supervivencia es el único objetivo.",
+                autor: "Panchito",
+                capitulos: [ { id: 'c1', titulo: "Capítulo 1: Cielos Tóxicos", texto: "El aire en Tlaxcala ya no olía a tierra mojada..." } ]
+            }
+        ];
+
+        let proyectoActivoIdx = null;
+        let capituloActivoIdx = null;
+
+        // ==========================================
+        // LÓGICA DE LOGIN Y NAVEGACIÓN
+        // ==========================================
         function intentarLogin() {
             const u = document.getElementById('user-input').value;
             const p = document.getElementById('pass-input').value;
-            document.getElementById('loading-msg').classList.remove('hidden');
-            
-            database.ref('plataforma_libros/').once('value').then((snapshot) => {
-                dbLocal = snapshot.val();
-                
-                if (!dbLocal) {
-                    dbLocal = { 
-                        usuarios: [{u: "admin", p: "1234"}],
-                        libros: [
-                            { 
-                                titulo: "El Polen de la Raíz", 
-                                estado: "Escribiéndose", 
-                                personajes: "Protagonista: 28 años, ex-barista originario de Tlaxcala...", 
-                                capitulos: [{ titulo: "Prólogo: La Raíz", contenido: "" }] 
-                            }
-                        ]
-                    };
-                }
+            usuarioActivo = usuariosDB.find(user => user.u === u && user.p === p);
 
-                if(dbLocal.usuarios.find(user => user.u === u && user.p === p)) {
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('app-section').classList.remove('hidden');
-                    if(u === "admin") document.getElementById('btn-gestion-usuarios').classList.remove('hidden');
-                    abrirLobby();
-                } else { 
-                    alert("Usuario o contraseña incorrectos."); 
-                    document.getElementById('loading-msg').classList.add('hidden');
-                }
+            if (usuarioActivo) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('top-nav').classList.remove('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                document.getElementById('user-display-name').innerText = usuarioActivo.u;
+                document.getElementById('home-username').innerText = usuarioActivo.u;
+                document.getElementById('home-rol').innerText = "Clase: " + usuarioActivo.rol;
+
+                if(usuarioActivo.isAdmin) document.getElementById('btn-admin').classList.remove('hidden');
+                if(usuarioActivo.rol === "escritor") document.getElementById('nav-herreria').classList.remove('hidden');
+
+                arrancarApp();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function cambiarVista(vista, boton) {
+            document.querySelectorAll('#main-content > div.view-container').forEach(div => div.classList.add('hidden'));
+            document.getElementById('vista-' + vista).classList.remove('hidden');
+
+            if(boton) {
+                document.querySelectorAll('#top-nav .btn-nav').forEach(btn => btn.classList.remove('activo'));
+                boton.classList.add('activo');
+            }
+
+            if(vista === 'herreria') renderizarArmeria();
+            if(vista === 'archivo') renderizarArchivoCinematico();
+        }
+
+        function arrancarApp() {
+            renderizarInventarioPersonal();
+            renderizarArchivoCinematico();
+        }
+
+        // ==========================================
+        // RENDERIZADO BÁSICO (INVENTARIO Y ARCHIVO)
+        // ==========================================
+        function renderizarInventarioPersonal() {
+            const grid = document.getElementById('grid-inventario-personal');
+            grid.innerHTML = '';
+            
+            // Renderizamos los IDs que el usuario tiene en miInventario buscando en la bibliotecaGlobal
+            const librosUsuario = bibliotecaGlobal.filter(l => miInventario.includes(l.id));
+
+            if(librosUsuario.length === 0) {
+                grid.innerHTML = `<p style="color: var(--text-sub);">Inventario vacío. Visita El Gran Archivo.</p>`;
+            } else {
+                librosUsuario.forEach(obra => {
+                    grid.innerHTML += `<div class="inv-card" style="background-image: url('${obra.img}');"><h3 class="inv-title epic-font">${obra.tituloPlano}</h3></div>`;
+                });
+            }
+        }
+
+        function renderizarArchivoCinematico() {
+            const container = document.getElementById('contenedor-archivo-global');
+            container.innerHTML = '';
+
+            bibliotecaGlobal.forEach(libro => {
+                const yaLoTengo = miInventario.includes(libro.id);
+                const btnAction = yaLoTengo 
+                    ? `<button class="btn-action btn-secondary" disabled>Equipado en Inventario</button>`
+                    : `<button class="btn-action" onclick="agregarInventario(${libro.id})">▶ Añadir a la Bolsa</button>`;
+
+                container.innerHTML += `
+                    <div class="cinematic-banner" style="background-image: url('${libro.img}');">
+                        <div class="banner-content">
+                            <span class="banner-meta">${libro.fecha}</span>
+                            <h1 class="banner-title">${libro.titulo}</h1>
+                            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; text-shadow: 1px 1px 3px #000; color: var(--text-main);">${libro.desc}</p>
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                ${btnAction}
+                                <span style="font-size: 0.8rem; color: var(--text-sub);">Forjado por @${libro.autor}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
         }
 
-        /* --- NAVEGACIÓN Y SIDEBAR --- */
-        function abrirLobby() {
-            document.getElementById('vista-libro').classList.add('hidden');
-            document.getElementById('vista-editor').classList.add('hidden');
-            document.getElementById('vista-inicio').classList.remove('hidden');
+        function agregarInventario(id) {
+            miInventario.push(id);
+            renderizarInventarioPersonal();
+            renderizarArchivoCinematico(); 
+        }
+
+        // ==========================================
+        // SINCRONIZACIÓN HERRERÍA -> ARCHIVO GLOBAL
+        // ==========================================
+        function sincronizarConArchivoGlobal(obraLocal) {
+            // Busca si el libro ya existe en el mundo
+            let libroGlobal = bibliotecaGlobal.find(l => l.id === obraLocal.id);
             
-            document.getElementById('sub-sidebar').innerText = "Lobby Principal";
+            if (!libroGlobal) {
+                // Si es un mundo nuevo, lo crea y lo añade al servidor público
+                libroGlobal = {
+                    id: obraLocal.id,
+                    titulo: obraLocal.titulo, 
+                    tituloPlano: obraLocal.titulo,
+                    autor: obraLocal.autor,
+                    fecha: "Forjado Recientemente",
+                    img: obraLocal.img,
+                    desc: obraLocal.sinopsis,
+                    capitulos: obraLocal.capitulos.length
+                };
+                bibliotecaGlobal.push(libroGlobal);
+            } else {
+                // Si ya existe, actualiza sus datos visuales para que todos lo vean modificado
+                libroGlobal.titulo = obraLocal.titulo;
+                libroGlobal.tituloPlano = obraLocal.titulo;
+                libroGlobal.img = obraLocal.img;
+                libroGlobal.desc = obraLocal.sinopsis;
+                libroGlobal.capitulos = obraLocal.capitulos.length;
+            }
             
-            // Sidebar para el Lobby
-            const side = document.getElementById('contenido-sidebar');
-            side.innerHTML = `<button class="btn-nav activo">📚 Mis Proyectos</button>`;
-            
-            // Renderizar Libros en el Centro
-            const grid = document.getElementById('grid-libros');
+            renderizarArchivoCinematico();
+        }
+
+        // ==========================================
+        // LÓGICA DE LA HERRERÍA
+        // ==========================================
+        function renderizarArmeria() {
+            document.getElementById('herreria-armeria').classList.remove('hidden');
+            document.getElementById('herreria-mesa').classList.add('hidden');
+            document.getElementById('herreria-yunque').classList.add('hidden');
+
+            const grid = document.getElementById('grid-mis-proyectos');
             grid.innerHTML = '';
-            if(dbLocal.libros) {
-                dbLocal.libros.forEach((l, i) => {
-                    const totalCapitulos = l.capitulos ? l.capitulos.length : 0;
-                    grid.innerHTML += `
-                        <div class="tarjeta-libro" onclick="abrirLibro(${i})">
-                            <span class="badge-estado">${l.estado || 'En progreso'}</span>
-                            <h2 style="margin: 20px 0 10px 0;">${l.titulo}</h2>
-                            <p style="color: var(--text-sub); font-size: 0.9rem;">${totalCapitulos} Capítulos</p>
-                            <button class="btn-submit" style="margin-top: 15px; padding: 10px;">Gestionar Obra →</button>
-                        </div>
-                    `;
-                });
-            }
+
+            misObrasForjadas.forEach((obra, index) => {
+                grid.innerHTML += `
+                    <div class="inv-card" style="background-image: url('${obra.img}'); border-color: var(--accent-fire);" onclick="abrirProyecto(${index})">
+                        <h3 class="inv-title epic-font" style="color: var(--accent-main);">${obra.titulo}</h3>
+                        <p style="position: relative; z-index: 2; margin: 0; font-size: 0.8rem; color: var(--accent-gold);">${obra.capitulos.length} Capítulos</p>
+                    </div>
+                `;
+            });
         }
 
-        function abrirLibro(idx) {
-            lIdx = idx;
-            const libro = dbLocal.libros[idx];
-            
-            document.getElementById('vista-inicio').classList.add('hidden');
-            document.getElementById('vista-editor').classList.add('hidden');
-            document.getElementById('vista-libro').classList.remove('hidden');
-            
-            // Cargar datos del libro
-            document.getElementById('input-titulo-libro').value = libro.titulo;
-            document.getElementById('select-estado').value = libro.estado || "Escribiéndose";
-            document.getElementById('contador-capitulos').innerText = libro.capitulos ? libro.capitulos.length : 0;
-            
-            // Actualizar Sidebar para mostrar índice
-            document.getElementById('sub-sidebar').innerText = libro.titulo;
-            const side = document.getElementById('contenido-sidebar');
-            side.innerHTML = `<button class="btn-nav" style="background:#444; color:white;" onclick="abrirLobby()">← Volver al Lobby</button>`;
-            side.innerHTML += `<button class="btn-nav" style="border-left: 4px solid var(--accent);" onclick="abrirPersonajes()">👤 Fichas de Personajes</button>`;
-            
-            if(libro.capitulos) {
-                libro.capitulos.forEach((c, i) => {
-                    side.innerHTML += `<button class="btn-nav" onclick="abrirEditor(${i})">📄 ${c.titulo}</button>`;
-                });
-            }
-
-            // Renderizar capítulos en la cuadrícula central
-            const grid = document.getElementById('grid-capitulos');
-            grid.innerHTML = '';
-            if(libro.capitulos) {
-                libro.capitulos.forEach((c, i) => {
-                    const preview = c.contenido ? c.contenido.substring(0, 60) + '...' : 'Capítulo en blanco...';
-                    grid.innerHTML += `
-                        <div class="tarjeta-libro" style="border-top-color: var(--text-sub);" onclick="abrirEditor(${i})">
-                            <h3 style="margin-top: 0;">${c.titulo}</h3>
-                            <p style="color: var(--text-sub); font-size: 0.8rem; font-style: italic;">"${preview}"</p>
-                        </div>
-                    `;
-                });
-            }
+        function forjarNuevoMundo() {
+            const nuevoId = Date.now(); // ID numérico único
+            const nuevaObra = {
+                id: nuevoId,
+                titulo: "Nuevo Grimorio Sin Título",
+                img: "https://via.placeholder.com/300x450/16181d/d4af37?text=Nueva+Forja",
+                sinopsis: "Sinopsis desconocida...",
+                autor: usuarioActivo.u,
+                capitulos: []
+            };
+            misObrasForjadas.push(nuevaObra);
+            sincronizarConArchivoGlobal(nuevaObra); // ¡Sincroniza al crearlo!
+            renderizarArmeria();
         }
 
-        /* --- ACCIONES DE LIBRO --- */
-        function crearNuevoLibro() {
-            const titulo = prompt("Nombre de la nueva obra:");
-            if(titulo) {
-                if(!dbLocal.libros) dbLocal.libros = [];
-                dbLocal.libros.push({ titulo: titulo, estado: "Escribiéndose", personajes: "", capitulos: [] });
-                guardarEnNube();
-                abrirLobby();
+        function abrirProyecto(index) {
+            proyectoActivoIdx = index;
+            const obra = misObrasForjadas[index];
+            document.getElementById('herreria-armeria').classList.add('hidden');
+            document.getElementById('herreria-mesa').classList.remove('hidden');
+
+            document.getElementById('mesa-input-titulo').value = obra.titulo;
+            document.getElementById('mesa-input-sinopsis').value = obra.sinopsis;
+            document.getElementById('mesa-input-img').value = obra.img;
+            document.getElementById('mesa-portada-preview').style.backgroundImage = `url('${obra.img}')`;
+
+            renderizarListaCapitulos();
+        }
+
+        function actualizarProyecto() {
+            const obra = misObrasForjadas[proyectoActivoIdx];
+            obra.titulo = document.getElementById('mesa-input-titulo').value;
+            obra.sinopsis = document.getElementById('mesa-input-sinopsis').value;
+            obra.img = document.getElementById('mesa-input-img').value;
+            
+            document.getElementById('mesa-portada-preview').style.backgroundImage = `url('${obra.img}')`;
+            
+            sincronizarConArchivoGlobal(obra); // ¡Sincroniza al editarlo!
+            renderizarInventarioPersonal(); 
+        }
+
+        function volverArmeria() {
+            proyectoActivoIdx = null;
+            renderizarArmeria();
+        }
+
+        function renderizarListaCapitulos() {
+            const lista = document.getElementById('mesa-lista-capitulos');
+            lista.innerHTML = '';
+            const obra = misObrasForjadas[proyectoActivoIdx];
+
+            if(obra.capitulos.length === 0) {
+                lista.innerHTML = `<p style="color: var(--text-sub); font-size: 0.9rem;">Aún no has forjado ningún capítulo para este grimorio.</p>`;
+                return;
             }
-        }
 
-        function guardarCambiosLibro() {
-            dbLocal.libros[lIdx].titulo = document.getElementById('input-titulo-libro').value;
-            dbLocal.libros[lIdx].estado = document.getElementById('select-estado').value;
-            guardarEnNube();
-            abrirLibro(lIdx); // Refrescar vista
-        }
-
-        /* --- EDITOR DE TEXTO Y WORD --- */
-        function abrirPersonajes() {
-            esPersonajes = true;
-            mostrarEditor("Fichas de Personajes y Mundo", dbLocal.libros[lIdx].personajes || "");
+            obra.capitulos.forEach((cap, idx) => {
+                lista.innerHTML += `
+                    <div class="capitulo-item" onclick="abrirEditorCapitulo(${idx})">
+                        <span style="font-family: 'Cinzel', serif; color: var(--text-main); font-weight: bold;">${cap.titulo}</span>
+                        <span style="color: var(--accent-fire); font-size: 0.8rem;">Modificar ⚒️</span>
+                    </div>
+                `;
+            });
         }
 
         function crearNuevoCapitulo() {
-            if(!dbLocal.libros[lIdx].capitulos) dbLocal.libros[lIdx].capitulos = [];
-            const numero = dbLocal.libros[lIdx].capitulos.length + 1;
-            dbLocal.libros[lIdx].capitulos.push({ titulo: `Capítulo ${numero}`, contenido: "" });
-            guardarEnNube();
-            abrirLibro(lIdx);
-        }
-
-        function abrirEditor(idx) {
-            esPersonajes = false;
-            cIdx = idx;
-            const cap = dbLocal.libros[lIdx].capitulos[idx];
-            mostrarEditor(cap.titulo, cap.contenido);
-        }
-
-        function mostrarEditor(titulo, contenido) {
-            document.getElementById('vista-libro').classList.add('hidden');
-            document.getElementById('vista-editor').classList.remove('hidden');
+            const obra = misObrasForjadas[proyectoActivoIdx];
+            const num = obra.capitulos.length + 1;
+            obra.capitulos.push({ id: 'c' + Date.now(), titulo: "Capítulo " + num, texto: "" });
             
-            document.getElementById('input-titulo-editor').value = titulo;
-            document.getElementById('texto-contenido').value = contenido;
-            
-            // Botón de Volver en Sidebar
-            document.getElementById('contenido-sidebar').innerHTML = `<button class="btn-nav" style="background:#444; color:white;" onclick="abrirLibro(${lIdx})">← Guardar y Volver a ${dbLocal.libros[lIdx].titulo}</button>`;
+            sincronizarConArchivoGlobal(obra); // Actualiza la cantidad de capítulos globales
+            renderizarListaCapitulos();
         }
 
-        function guardarEditor() {
-            const tituloNuevo = document.getElementById('input-titulo-editor').value;
-            const contenidoNuevo = document.getElementById('texto-contenido').value;
+        function abrirEditorCapitulo(index) {
+            capituloActivoIdx = index;
+            const cap = misObrasForjadas[proyectoActivoIdx].capitulos[index];
+            document.getElementById('herreria-mesa').classList.add('hidden');
+            document.getElementById('herreria-yunque').classList.remove('hidden');
 
-            if(esPersonajes) {
-                dbLocal.libros[lIdx].personajes = contenidoNuevo;
-            } else {
-                dbLocal.libros[lIdx].capitulos[cIdx].titulo = tituloNuevo;
-                dbLocal.libros[lIdx].capitulos[cIdx].contenido = contenidoNuevo;
-            }
-            guardarEnNube();
+            document.getElementById('yunque-titulo-capitulo').value = cap.titulo;
+            document.getElementById('yunque-texto').value = cap.texto;
         }
 
-        // --- LECTURA DE ARCHIVOS WORD (.docx) ---
+        function guardarCapitulo() {
+            const cap = misObrasForjadas[proyectoActivoIdx].capitulos[capituloActivoIdx];
+            cap.titulo = document.getElementById('yunque-titulo-capitulo').value;
+            cap.texto = document.getElementById('yunque-texto').value;
+            renderizarListaCapitulos(); // Refrescar nombres
+        }
+
+        function volverMesaDiseno() {
+            guardarCapitulo();
+            capituloActivoIdx = null;
+            document.getElementById('herreria-yunque').classList.add('hidden');
+            abrirProyecto(proyectoActivoIdx);
+        }
+
         function leerWord(event) {
             const file = event.target.files[0];
             if(!file) return;
-
             const reader = new FileReader();
             reader.onload = function(loadEvent) {
-                const arrayBuffer = loadEvent.target.result;
-                // Usamos Mammoth.js para extraer el texto crudo
-                mammoth.extractRawText({arrayBuffer: arrayBuffer})
-                    .then(function(result) {
-                        const textoExtraido = result.value;
-                        document.getElementById('texto-contenido').value = textoExtraido;
-                        guardarEditor(); // Guardamos automáticamente en Firebase
-                        alert("✅ Documento Word importado con éxito.");
-                        document.getElementById('upload-word').value = ""; // Limpiar input
-                    })
-                    .catch(function(err) {
-                        console.log(err);
-                        alert("Error al leer el archivo Word. Asegúrate de que sea formato .docx");
-                    });
+                mammoth.extractRawText({arrayBuffer: loadEvent.target.result})
+                    .then(result => { 
+                        document.getElementById('yunque-texto').value = result.value; 
+                        guardarCapitulo();
+                        alert("✨ Pergamino transmutado exitosamente en el Yunque."); 
+                    }).catch(err => alert("❌ Error al transmutar. Asegúrate de que sea .docx"));
             };
             reader.readAsArrayBuffer(file);
         }
 
-        /* --- GUARDADO EN NUBE --- */
-        function guardarEnNube() {
-            database.ref('plataforma_libros/').set(dbLocal).then(() => {
-                console.log("Sincronizado con Firebase.");
-            });
-        }
-
-        /* --- GESTIÓN DE USUARIOS (Igual) --- */
-        function abrirGestionUsuarios() { document.getElementById('modal-usuarios').classList.remove('hidden'); actualizarListaUsuarios(); }
-        function actualizarListaUsuarios() {
-            document.getElementById('lista-usuarios').innerHTML = dbLocal.usuarios.map((user, i) => `
-                <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border);">
-                    <span>👤 ${user.u}</span>
-                    ${user.u !== "admin" ? `<button onclick="borrarUsuario(${i})" style="background:none; color:#ff4c4c; border:none; cursor:pointer;">[X]</button>` : ''}
+        // ==========================================
+        // ADMIN Y ROLES
+        // ==========================================
+        function renderizarListaUsuarios() {
+            document.getElementById('lista-usuarios').innerHTML = usuariosDB.map((user, i) => `
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-panel); padding: 5px 0; font-size: 0.85rem; color: white;">
+                    <span>${user.u} (${user.rol})</span>
+                    ${!user.isAdmin ? `<button onclick="borrarUser(${i})" style="background:none; border:none; color:var(--accent-fire); cursor:pointer;">X</button>` : ''}
                 </div>
             `).join('');
         }
         function crearUsuario() {
-            const u = document.getElementById('new-u').value; const p = document.getElementById('new-p').value;
-            if(u && p) { dbLocal.usuarios.push({u, p}); guardarEnNube(); actualizarListaUsuarios(); }
+            const u = document.getElementById('new-u').value; const p = document.getElementById('new-p').value; const rol = document.getElementById('new-rol').value;
+            if(u && p) { usuariosDB.push({u, p, rol, isAdmin: false}); renderizarListaUsuarios(); alert("Aventurero registrado."); }
         }
-        function borrarUsuario(i) { if(confirm("¿Eliminar usuario?")) { dbLocal.usuarios.splice(i, 1); guardarEnNube(); actualizarListaUsuarios(); } }
+        function borrarUser(i) { usuariosDB.splice(i, 1); renderizarListaUsuarios(); }
+
     </script>
 </body>
 </html>
