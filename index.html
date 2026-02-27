@@ -66,8 +66,8 @@
         <div class="login-card">
             <h1>Archivo de Mundos</h1>
             <p>Registro en la Nube</p>
-            <input type="text" id="user-input" class="login-input" placeholder="Usuario (admin)">
-            <input type="password" id="pass-input" class="login-input" placeholder="Contraseña (1234)">
+            <input type="text" id="user-input" class="login-input" placeholder="Usuario">
+            <input type="password" id="pass-input" class="login-input" placeholder="Contraseña">
             <button class="btn-submit" onclick="intentarLogin()">Desbloquear Códice</button>
             <p id="loading-msg" class="hidden" style="color:var(--accent); margin-top:15px; font-weight:bold;">Sincronizando universos...</p>
         </div>
@@ -79,10 +79,14 @@
             <button class="btn-novela activo" onclick="abrirInicio()">🏠 Sala de Escritura</button>
             <div id="lista-novelas"></div>
             <button onclick="agregarNuevaNovela()" style="margin: 15px; padding: 10px; background: transparent; border: 2px dashed var(--accent); color: var(--text-sub); border-radius: 8px; cursor: pointer; font-weight: bold;">+ Nuevo Universo</button>
+            
+            <div style="margin-top: auto; padding: 15px;">
+                <button id="btn-gestion-usuarios" onclick="abrirGestionUsuarios()" class="btn-submit hidden" style="width:100%; font-size: 0.9rem; margin-bottom: 10px;">Gestión de Usuarios</button>
+                <button onclick="location.reload()" class="btn-submit" style="width:100%; font-size: 0.9rem; background: #444; color: white;">Cerrar Sesión</button>
+            </div>
         </div>
         
         <div id="contenido-principal">
-            
             <div id="vista-inicio">
                 <div class="panel-modulo" style="text-align: center; background: linear-gradient(rgba(45, 50, 80, 0.8), rgba(45, 50, 80, 0.8)), url('https://images.unsplash.com/photo-1455390582262-044cdead2708?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') center/cover; color: white;">
                     <h1 style="font-size: 2.5rem; margin-bottom: 5px;">Bitácora de Autor</h1>
@@ -113,8 +117,17 @@
                     <textarea id="texto-contenido" rows="18" placeholder="Comienza a redactar aquí..."></textarea>
                 </div>
             </div>
-            
         </div>
+    </div>
+
+    <div id="modal-usuarios" class="hidden" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--bg-panel); padding:30px; border:2px solid var(--accent); z-index:200; width:350px; border-radius:10px; box-shadow: 0 10px 30px var(--shadow);">
+        <h3 style="color:var(--text-main); margin-top:0;">Panel de Administrador</h3>
+        <div id="lista-usuarios" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; color:var(--text-main);"></div>
+        <hr style="border:0.5px solid var(--text-sub); margin-bottom: 15px;">
+        <input type="text" id="new-u" class="login-input" placeholder="Nuevo Usuario" style="padding:10px;">
+        <input type="password" id="new-p" class="login-input" placeholder="Nueva Contraseña" style="padding:10px;">
+        <button class="btn-submit" onclick="crearUsuario()" style="width:100%">Dar de Alta</button>
+        <button class="btn-submit" onclick="document.getElementById('modal-usuarios').classList.add('hidden')" style="background:#444; width:100%; margin-top:5px; color:white;">Cerrar</button>
     </div>
 
     <script>
@@ -146,48 +159,89 @@
 
         let dbLocal = null;
         let nIdx = null, cIdx = null;
+        let usuarioActual = "";
 
         // --- LOGIN Y CARGA DE DATOS ---
         function intentarLogin() {
             const u = document.getElementById('user-input').value;
             const p = document.getElementById('pass-input').value;
 
-            if(u === "admin" && p === "1234") {
-                document.getElementById('loading-msg').classList.remove('hidden');
+            document.getElementById('loading-msg').classList.remove('hidden');
+            
+            database.ref('archivo_mundos/').once('value').then((snapshot) => {
+                dbLocal = snapshot.val();
                 
-                database.ref('archivo_mundos/').once('value').then((snapshot) => {
-                    dbLocal = snapshot.val();
-                    
-                    // Si está vacío, inyectamos una estructura base para que no arranques en blanco
-                    if (!dbLocal) {
-                        dbLocal = { 
-                            lobby: { objetivos: "Escribir al menos 500 palabras diarias." },
-                            novelas: [
-                                {
-                                    titulo: "El Polen de la Raíz",
-                                    carpetas: [
-                                        { nombre: "Personajes", contenido: "Protagonista: 28 años, ex-barista originario de Tlaxcala. Habilidades: Manipulación de electricidad y mejora física." },
-                                        { nombre: "El Mundo", contenido: "Una raíz mágica consumió América, Europa y Asia. Zonas seguras restantes: Japón, Australia, Cuba y Groenlandia. Las frutas monstruosas y el polen tóxico dominan el ambiente." },
-                                        { nombre: "Capítulo 1", contenido: "" }
-                                    ]
-                                },
-                                {
-                                    titulo: "Proyecto Sci-Fi",
-                                    carpetas: [
-                                        { nombre: "Personajes", contenido: "Lyra, Evie, Samuel, Héctor, Alan, Selene y Andrea.\nAntagonistas principales: Maxwell Xolocotzi Zempoalteca." },
-                                        { nombre: "Conceptos", contenido: "Uso de armaduras futuristas, habilidades psiónicas y 'El Domo'." },
-                                        { nombre: "Niveles de Poder", contenido: "Sistema de clasificación de fuerza..." }
-                                    ]
-                                }
-                            ]
-                        };
-                    }
-                    
+                // Si la base de datos está totalmente vacía
+                if (!dbLocal) {
+                    dbLocal = { 
+                        usuarios: [{u: "admin", p: "1234"}],
+                        lobby: { objetivos: "" },
+                        novelas: []
+                    };
+                }
+                
+                // Si venimos de una versión anterior que no tenía el apartado de usuarios
+                if (!dbLocal.usuarios) {
+                    dbLocal.usuarios = [{u: "admin", p: "1234"}];
+                }
+
+                const userFound = dbLocal.usuarios.find(user => user.u === u && user.p === p);
+                
+                if(userFound) {
+                    usuarioActual = u;
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('app-section').classList.remove('hidden');
+                    
+                    // Mostrar botón de gestión solo si es admin
+                    if(usuarioActual === "admin") {
+                        document.getElementById('btn-gestion-usuarios').classList.remove('hidden');
+                    }
+                    
                     inicializarApp();
-                });
-            } else { alert("Credenciales incorrectas."); }
+                } else { 
+                    alert("Usuario o contraseña incorrectos."); 
+                    document.getElementById('loading-msg').classList.add('hidden');
+                }
+            });
+        }
+
+        // --- GESTIÓN DE USUARIOS ---
+        function abrirGestionUsuarios() {
+            if(usuarioActual !== "admin") return;
+            document.getElementById('modal-usuarios').classList.remove('hidden');
+            actualizarListaUsuarios();
+        }
+
+        function actualizarListaUsuarios() {
+            const lista = document.getElementById('lista-usuarios');
+            lista.innerHTML = dbLocal.usuarios.map((user, index) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border);">
+                    <span>👤 ${user.u}</span>
+                    ${user.u !== "admin" ? `<button onclick="borrarUsuario(${index})" style="background:none; color:#ff4c4c; border:none; cursor:pointer; font-weight:bold;">[X]</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function crearUsuario() {
+            const newU = document.getElementById('new-u').value;
+            const newP = document.getElementById('new-p').value;
+            if(newU && newP) {
+                if(dbLocal.usuarios.find(user => user.u === newU)) return alert("El usuario ya existe.");
+                dbLocal.usuarios.push({u: newU, p: newP});
+                guardarDatosNube();
+                document.getElementById('new-u').value = "";
+                document.getElementById('new-p').value = "";
+                actualizarListaUsuarios();
+                alert("Usuario creado exitosamente.");
+            }
+        }
+
+        function borrarUsuario(index) {
+            if(confirm("¿Seguro que quieres eliminar el acceso a este usuario?")) {
+                dbLocal.usuarios.splice(index, 1);
+                guardarDatosNube();
+                actualizarListaUsuarios();
+            }
         }
 
         // --- NAVEGACIÓN ---
@@ -199,9 +253,11 @@
         function renderizarSidebar() {
             const lista = document.getElementById('lista-novelas');
             lista.innerHTML = '';
-            dbLocal.novelas.forEach((n, i) => {
-                lista.innerHTML += `<button class="btn-novela" onclick="abrirNovela(${i})">📖 ${n.titulo}</button>`;
-            });
+            if(dbLocal.novelas) {
+                dbLocal.novelas.forEach((n, i) => {
+                    lista.innerHTML += `<button class="btn-novela" onclick="abrirNovela(${i})">📖 ${n.titulo}</button>`;
+                });
+            }
         }
 
         function abrirInicio() {
@@ -225,19 +281,22 @@
             
             const cont = document.getElementById('contenedor-carpetas');
             cont.innerHTML = '';
-            dbLocal.novelas[idx].carpetas.forEach((c, i) => {
-                cont.innerHTML += `
-                    <div class="carpeta-card">
-                        <input type="text" value="${c.nombre}" onchange="actualizarNombreCarpeta(${i}, this.value)" style="width:100%; border:none; border-bottom:1px dashed var(--text-sub); text-align:center; font-weight:bold; background:transparent; color:var(--text-main); font-size:1.1rem; margin-bottom:15px; padding-bottom:5px;">
-                        <button class="btn-submit" style="font-size:0.9rem; padding:10px;" onclick="entrarEditor(${i})">Escribir / Leer →</button>
-                    </div>`;
-            });
+            if(dbLocal.novelas[idx].carpetas) {
+                dbLocal.novelas[idx].carpetas.forEach((c, i) => {
+                    cont.innerHTML += `
+                        <div class="carpeta-card">
+                            <input type="text" value="${c.nombre}" onchange="actualizarNombreCarpeta(${i}, this.value)" style="width:100%; border:none; border-bottom:1px dashed var(--text-sub); text-align:center; font-weight:bold; background:transparent; color:var(--text-main); font-size:1.1rem; margin-bottom:15px; padding-bottom:5px;">
+                            <button class="btn-submit" style="font-size:0.9rem; padding:10px;" onclick="entrarEditor(${i})">Escribir / Leer →</button>
+                        </div>`;
+                });
+            }
         }
 
         // --- GESTIÓN DE CONTENIDO ---
         function agregarNuevaNovela() {
             const titulo = prompt("Nombre de tu nueva novela:");
             if(titulo) {
+                if(!dbLocal.novelas) dbLocal.novelas = [];
                 dbLocal.novelas.push({ titulo: titulo, carpetas: [{nombre: "Personajes", contenido: ""}, {nombre: "Capítulo 1", contenido: ""}] });
                 guardarDatosNube();
                 renderizarSidebar();
@@ -246,6 +305,7 @@
         }
 
         function agregarCarpeta() {
+            if(!dbLocal.novelas[nIdx].carpetas) dbLocal.novelas[nIdx].carpetas = [];
             dbLocal.novelas[nIdx].carpetas.push({ nombre: "Nueva Sección", contenido: "" });
             guardarDatosNube();
             abrirNovela(nIdx);
@@ -272,11 +332,9 @@
 
         // --- MAGIA EN LA NUBE ---
         function guardarDatosNube() {
-            // Guardamos objetivos del lobby si estamos ahí
             if(!document.getElementById('vista-inicio').classList.contains('hidden')) {
                 dbLocal.lobby.objetivos = document.getElementById('texto-objetivos').value;
             }
-            // Subimos todo el JSON a Firebase
             database.ref('archivo_mundos/').set(dbLocal).then(() => {
                 console.log("Universos sincronizados correctamente.");
             });
@@ -284,3 +342,4 @@
     </script>
 </body>
 </html>
+
